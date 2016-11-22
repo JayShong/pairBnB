@@ -11,3 +11,6 @@
 /log/*
 !/log/.keep
 /tmp
+
+# keep facebook key private from github
+/config/application.yml
