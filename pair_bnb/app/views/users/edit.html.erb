@@ -1,0 +1,17 @@
+<p>Find me in app/views/users/edit.html.erb</p>
+
+<h1> Your are logged in as a <%= current_user.role %></h1>
+
+<%= link_to "Listings page", listings_path %>
+
+  <%= form_for @user do |form| %>
+  	<% if current_user.role == "tenant" %>
+    	<div class="submit-field">
+    	  <%= form.submit "I am a landlord." %>
+    	</div>
+   	<% elsif current_user.role == "landlord" %>
+    	<div class="submit-field">
+      	  <%= form.submit "I am a tenant." %>
+    	</div>
+    <% end %>
+   <% end %>

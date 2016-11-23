@@ -1,7 +1,12 @@
 <h1>Listings</h1>
 <p>Find me in app/views/listings/index.html.erb</p>
 
+  <p>You are logged in as a <%= current_user.role %>.</p>
+
+<% if current_user.role == "landlord" %>
 <%= link_to "Create a New Listing", new_listing_path %>
+<% end %>
+<%= link_to "Profile", edit_user_path(current_user.id) %>
 
 <table class="table">
 	<thead>
