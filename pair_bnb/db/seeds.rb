@@ -5,3 +5,6 @@
 #
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
+
+listings = Listing.create(address: "Road ABCD", location: "Ara", price: rand(0..100), user_id: 1, description: "ABCD")
+100.times do listings end
