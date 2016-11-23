@@ -1,8 +1,6 @@
 class ListingsController < ApplicationController
   def index
-    @listing = Listings.paginate(page: params[:page])
-
-    default_scope { order(price: :desc) }
+    @listings = Listing.paginate(page: params[:page])
   end
 
   def new
