@@ -25,13 +25,11 @@ class SessionsController < Clearance::SessionsController
         if authentication.user
           user = authentication.user 
           authentication.update_token(auth_hash)
-          session[:user_id] = user.id
           @next = listings_path
           @notice = "Signed in!"
         else
           user = User.create_with_auth_and_hash(authentication,auth_hash)
           @next = listings_path 
-          session[:user_id] = user.id
           @notice = "Signed in!"
         end
         sign_in(user)
