@@ -1,2 +1,29 @@
-<h1>Listings#new</h1>
 <p>Find me in app/views/listings/new.html.erb</p>
+
+
+<h1> Create your listing here</h1>
+  <%= form_for @listings do |form| %>
+  	<div class="text-field">
+ 	 <%= form.label :address %>
+  	 <%= form.text_field :address %>
+	</div>
+
+	<div class="text-field">
+ 	 <%= form.label :location %>
+ 	 <%= form.text_field :location %>
+	</div>
+
+	<div class="number-field">
+ 	 <%= form.label :price %>
+ 	 <%= form.number_field :price %>
+	</div>
+
+	<div class="text-field">
+ 	 <%= form.label :decsription %>
+ 	 <%= form.text_field :description %>
+	</div>
+
+    <div class="submit-field">
+      <%= form.submit %>
+    </div>
+  <% end %>
