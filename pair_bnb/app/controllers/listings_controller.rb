@@ -4,17 +4,15 @@ class ListingsController < ApplicationController
   end
 
   def new
-    @listings = Listing.new
+    @listing = Listing.new
   end
 
   def create
-    byebug
-    @listings = params[:listing]
-    @listings = Listing.create(@listings)
+    @listing = Listing.create(listings_params)
 
         respond_to do |format|
-      if @listings.save
-        format.html { redirect_to @listings, notice: 'Listing was succesfully created.'}
+      if @listing.save
+        format.html { redirect_to listing_path(id: @listing.id), notice: 'Listing was succesfully created.'}
         format.js {}
       end
     end
@@ -24,12 +22,19 @@ class ListingsController < ApplicationController
   end
 
   def edit
+
   end
 
   def update
   end
 
   def destroy
+  end
+
+  private
+
+  def listings_params
+    params.require(:listing).permit(:address, :location, :price, :description)
   end
 
 end
