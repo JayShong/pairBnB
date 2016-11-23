@@ -21,4 +21,6 @@ class User < ActiveRecord::Base
     true
   end
 
+
+  enum role: [:tenant, :landlord, :admin]
 end
