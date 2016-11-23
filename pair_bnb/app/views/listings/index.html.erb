@@ -1,5 +1,7 @@
-<h1>Listings#index</h1>
+<h1>Listings</h1>
 <p>Find me in app/views/listings/index.html.erb</p>
+
+<%= link_to "Create a New Listing", new_listing_path %>
 
 <table class="table">
 	<thead>
@@ -8,15 +10,17 @@
 		<th>Price</th>
 		<th>Listed By</th>
 		<th>Description</th>
+		<th></th>
 	</thead>
 	<tbody>
-    <%= @listings.each do |listing| %>
+    <% @listings.each do |listing| %>
 		<tr>
 			<td> <%= listing.address %></td>
 			<td> <%= listing.location %></td>
 			<td> <%= listing.price %></td>
 			<td> <%= listing.user.email %></td>
 			<td> <%= listing.description %></td>
+			<td> <%= link_to "View", listing_path(id: listing.id) %></td>
 		</tr>
     <% end %>
 	</tbody>

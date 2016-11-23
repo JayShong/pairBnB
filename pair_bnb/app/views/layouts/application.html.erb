@@ -9,8 +9,8 @@
     <% if signed_in? -%>
       <%= button_to t(".sign_out"), sign_out_path, method: :delete %>
     <% else -%>
-      <%= link_to t(".sign"), sign_in_path %>
-      <%= link_to t(".sign_up_with_Facebook"), "/auth/facebook" %>
+      <%= link_to t(".sign_in"), sign_in_path %>
+      <%= link_to t(".sign_in_with_Facebook"), "/auth/facebook" %>
     <% end -%>
   </div>
 
@@ -19,7 +19,7 @@
       <div id="flash_<%= key %>"><%=h value %></div>
     <% end %>
   </div>
-  <h1>PairBnB</h1>
+  <p>PairBnB</p>
   <%= yield %>
 </body>
 </html>
