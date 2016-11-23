@@ -27,11 +27,12 @@ class ListingsController < ApplicationController
 
   def edit
     @listing = Listing.find(params[:id])
-
-
   end
 
   def update
+    @editted_listing = Listing.update(params[:id], listing_params)
+
+    redirect_to listing_path(id: params[:id])
   end
 
   def destroy
@@ -43,8 +44,11 @@ class ListingsController < ApplicationController
   private
 
   def listings_params
-
     params.require(:listing).permit(:address, :location, :price, :description, :user_id)
+  end
+
+  def listing_params
+    params.require(:listing).permit(:address, :location, :price, :description)
   end
 
 end
