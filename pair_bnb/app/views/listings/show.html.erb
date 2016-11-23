@@ -19,8 +19,10 @@
 			<td> <%= @listing.price %></td>
 			<td> <%= @listing.user.email %></td>
 			<td> <%= @listing.description %></td>
+			<% if current_user.role == "landlord" %>
 			<td> <%= link_to "Edit", edit_listing_path %></td>
 			<td> <%= link_to "Delete", listing_path(@listing.id), method: :delete %></td>
+			<% end %>
 	</tr>
 	</tbody>
 </table>
