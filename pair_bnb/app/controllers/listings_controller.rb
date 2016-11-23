@@ -8,7 +8,10 @@ class ListingsController < ApplicationController
   end
 
   def create
-    @listing = Listing.create(listings_params)
+    input = listings_params
+    input[:user_id] = current_user.id
+
+    @listing = Listing.create(input)
 
         respond_to do |format|
       if @listing.save
@@ -34,7 +37,8 @@ class ListingsController < ApplicationController
   private
 
   def listings_params
-    params.require(:listing).permit(:address, :location, :price, :description)
+
+    params.require(:listing).permit(:address, :location, :price, :description, :user_id)
   end
 
 end
