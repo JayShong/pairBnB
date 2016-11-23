@@ -10,6 +10,7 @@
 		<th>Price</th>
 		<th>Listed By</th>
 		<th>Description</th>
+		<th></th>
 	</thead>
 	<tbody>
     <% @listings.each do |listing| %>
@@ -19,6 +20,7 @@
 			<td> <%= listing.price %></td>
 			<td> <%= listing.user.email %></td>
 			<td> <%= listing.description %></td>
+			<td> <%= link_to "View", listing_path(id: listing.id) %></td>
 		</tr>
     <% end %>
 	</tbody>
