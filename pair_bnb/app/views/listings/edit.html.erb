@@ -24,6 +24,11 @@
  	 <%= form.text_field :description %>
 	</div>
 
+<!-- to list amenities -->
+	<%= form.fields_for :amenitylisting do |amenity| %>
+	<%= amenity.collection_check_boxes :amenity_ids, Amenity.all, :id, :name %>
+	<% end %>
+
     <div class="submit-field">
       <%= form.submit %>
     </div>

@@ -59,15 +59,62 @@ class ListingsController < ApplicationController
         @washing_machine = true end
     if amenities.include?"Kitchen Utensils"
         @utensils = true end
-  end
+    end
 
   def edit
     @listing = Listing.find(params[:id])
+
   end
 
   def update
+
     @editted_listing = Listing.update(params[:id], listing_params)
 
+    amenity_inputs = params[:listing][:amenitylisting][:amenity_ids].join
+    if amenity_inputs.include?("1") #wifi
+      AmenityListing.create(listing_id: @editted_listing.id, amenity_id: 1)
+    else
+      if AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 1).blank?
+      else
+         AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 1).destroy
+      end
+    end
+
+    if amenity_inputs.include?("2") #microwave_oven
+      AmenityListing.create(listing_id: @editted_listing.id, amenity_id: 2)
+    else
+      if AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 2).blank?
+      else
+         AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 2).destroy
+      end
+    end
+
+    if amenity_inputs.include?("3") #kettle
+      AmenityListing.create(listing_id: @editted_listing.id, amenity_id: 3)
+    else
+      if AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 3).blank?
+      else
+         AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 3).destroy
+      end
+    end
+
+    if amenity_inputs.include?("4") #washing_machine
+      AmenityListing.create(listing_id: @editted_listing.id, amenity_id: 4)
+    else
+      if AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 4).blank?
+      else
+         AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 4).destroy
+      end
+    end
+    
+    if amenity_inputs.include?("5") #kitchen_utensils
+      AmenityListing.create(listing_id: @editted_listing.id, amenity_id: 5)
+    else
+      if AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 5).blank?
+      else
+         AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 5).destroy
+      end
+    end
     redirect_to listing_path(id: params[:id])
   end
 
