@@ -13,6 +13,26 @@ class ListingsController < ApplicationController
 
     @listing = Listing.create(input)
 
+    # since amenity inputs are in the form of 1, 2, 3. 
+    # We build amenitylisting records via identification of such numbers
+    amenity_inputs = params[:listing][:amenitylisting][:amenity_ids].join
+    if amenity_inputs.include?("1") #wifi
+      AmenityListing.create(listing_id: @listing.id, amenity_id: 1)
+    end
+    if amenity_inputs.include?("2") #microwave_oven
+      AmenityListing.create(listing_id: @listing.id, amenity_id: 2)
+    end
+    if amenity_inputs.include?("3") #kettle
+      AmenityListing.create(listing_id: @listing.id, amenity_id: 3)
+    end
+    if amenity_inputs.include?("4") #washing_machine
+      AmenityListing.create(listing_id: @listing.id, amenity_id: 4)
+    end
+    if amenity_inputs.include?("5") #kitchen_utensils
+      AmenityListing.create(listing_id: @listing.id, amenity_id: 5)
+    end
+    # end tying amenities to listing
+
         respond_to do |format|
       if @listing.save
         format.html { redirect_to listing_path(id: @listing.id), notice: 'Listing was succesfully created.'}
@@ -23,15 +43,78 @@ class ListingsController < ApplicationController
 
   def show
     @listing = Listing.find(params[:id])
-  end
+    if @listing.amenities
+      amenities = []
+      amenity_names = @listing.amenities
+      amenity_names.each do |amenity| amenities << amenity.name end
+    end
+
+    if amenities.include?"Wifi"
+        @wifi = true end
+    if amenities.include?"Microwave Oven"
+        @microwave = true end
+    if amenities.include?"Kettle"
+        @kettle = true end
+    if amenities.include?"Washing Machine"
+        @washing_machine = true end
+    if amenities.include?"Kitchen Utensils"
+        @utensils = true end
+    end
 
   def edit
     @listing = Listing.find(params[:id])
+
   end
 
   def update
+
     @editted_listing = Listing.update(params[:id], listing_params)
 
+    amenity_inputs = params[:listing][:amenitylisting][:amenity_ids].join
+    if amenity_inputs.include?("1") #wifi
+      AmenityListing.create(listing_id: @editted_listing.id, amenity_id: 1)
+    else
+      if AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 1).blank?
+      else
+         AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 1).destroy
+      end
+    end
+
+    if amenity_inputs.include?("2") #microwave_oven
+      AmenityListing.create(listing_id: @editted_listing.id, amenity_id: 2)
+    else
+      if AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 2).blank?
+      else
+         AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 2).destroy
+      end
+    end
+
+    if amenity_inputs.include?("3") #kettle
+      AmenityListing.create(listing_id: @editted_listing.id, amenity_id: 3)
+    else
+      if AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 3).blank?
+      else
+         AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 3).destroy
+      end
+    end
+
+    if amenity_inputs.include?("4") #washing_machine
+      AmenityListing.create(listing_id: @editted_listing.id, amenity_id: 4)
+    else
+      if AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 4).blank?
+      else
+         AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 4).destroy
+      end
+    end
+    
+    if amenity_inputs.include?("5") #kitchen_utensils
+      AmenityListing.create(listing_id: @editted_listing.id, amenity_id: 5)
+    else
+      if AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 5).blank?
+      else
+         AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 5).destroy
+      end
+    end
     redirect_to listing_path(id: params[:id])
   end
 

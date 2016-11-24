@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  wifi: false
+  kettle: false
+  washing_machine: false
+  microwave_over: false
+  kitchen_utensils: false
+
+two:
+  wifi: false
+  kettle: false
+  washing_machine: false
+  microwave_over: false
+  kitchen_utensils: false
