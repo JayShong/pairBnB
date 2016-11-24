@@ -1,3 +1,5 @@
 class Amenity < ActiveRecord::Base
-	belongs_to :amenity_listing
+	has_many :amenitylisting
+
+	# mount_uploader :avatar, AvatarUploader
 end

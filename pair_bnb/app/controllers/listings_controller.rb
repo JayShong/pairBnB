@@ -13,6 +13,26 @@ class ListingsController < ApplicationController
 
     @listing = Listing.create(input)
 
+    # since amenity inputs are in the form of 1, 2, 3. 
+    # We build amenitylisting records via identification of such numbers
+    amenity_inputs = params[:listing][:amenitylisting][:amenity_ids].join
+    if amenity_inputs.include?("1") #wifi
+      AmenityListing.create(listing_id: @listing.id, amenity_id: 1)
+    end
+    if amenity_inputs.include?("2") #microwave_oven
+      AmenityListing.create(listing_id: @listing.id, amenity_id: 2)
+    end
+    if amenity_inputs.include?("3") #kettle
+      AmenityListing.create(listing_id: @listing.id, amenity_id: 3)
+    end
+    if amenity_inputs.include?("4") #washing_machine
+      AmenityListing.create(listing_id: @listing.id, amenity_id: 4)
+    end
+    if amenity_inputs.include?("5") #kitchen_utensils
+      AmenityListing.create(listing_id: @listing.id, amenity_id: 5)
+    end
+    # end tying amenities to listing
+
         respond_to do |format|
       if @listing.save
         format.html { redirect_to listing_path(id: @listing.id), notice: 'Listing was succesfully created.'}
