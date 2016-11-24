@@ -1,6 +1,7 @@
 class CreateAmenities < ActiveRecord::Migration
   def change
     create_table :amenities do |t|
+      t.string :amenity
       t.string :icon_url
       t.timestamps null: false
     end

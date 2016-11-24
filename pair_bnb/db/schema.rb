@@ -11,13 +11,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161123095420) do
+ActiveRecord::Schema.define(version: 20161124024721) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "amenities", force: :cascade do |t|
+    t.string   "amenity"
     t.string   "icon_url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "amenity_listings", force: :cascade do |t|
+    t.integer  "listing_id"
+    t.integer  "amenity_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
