@@ -43,6 +43,22 @@ class ListingsController < ApplicationController
 
   def show
     @listing = Listing.find(params[:id])
+    if @listing.amenities
+      amenities = []
+      amenity_names = @listing.amenities
+      amenity_names.each do |amenity| amenities << amenity.name end
+    end
+
+    if amenities.include?"Wifi"
+        @wifi = true end
+    if amenities.include?"Microwave Oven"
+        @microwave = true end
+    if amenities.include?"Kettle"
+        @kettle = true end
+    if amenities.include?"Washing Machine"
+        @washing_machine = true end
+    if amenities.include?"Kitchen Utensils"
+        @utensils = true end
   end
 
   def edit

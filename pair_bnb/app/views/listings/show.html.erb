@@ -10,7 +10,7 @@
 		<th>Price</th>
 		<th>Listed By</th>
 		<th>Description</th>
-		<th></th>
+		<th>Amenities</th>
 	</thead>
 	<tbody>
 	<tr>
@@ -19,6 +19,7 @@
 			<td> <%= @listing.price %></td>
 			<td> <%= @listing.user.email %></td>
 			<td> <%= @listing.description %></td>
+			<td> <%= wifi_icon %><%= kettle_icon %><%= washing_machine_icon %><%=microwave_icon %><%=utensils_icon %></td>
 			<% if current_user.role == "landlord" %>
 			<td> <%= link_to "Edit", edit_listing_path %></td>
 			<td> <%= link_to "Delete", listing_path(@listing.id), method: :delete %></td>
