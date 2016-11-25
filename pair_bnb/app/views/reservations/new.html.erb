@@ -1,0 +1,10 @@
+
+<%= "Reservation for" + @listing.address %>
+
+<%= form_for [@listing, @reservation] do |form| %>
+    <%= render partial: '/reservations/form', object: form %>
+
+    <div class="submit-field">
+      <%= form.submit %>
+    </div>
+<% end %>
