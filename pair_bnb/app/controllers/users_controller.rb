@@ -8,6 +8,9 @@ class UsersController < Clearance::UsersController
 
 	def update
 		@user = User.find(current_user.id)
+		params.permit!
+		User.update(params[:id], params[:user])
+
 		if @user.role == "tenant"
 			User.update(current_user.id, role: 1)
 		elsif @user.role == "landlord"
@@ -30,6 +33,10 @@ class UsersController < Clearance::UsersController
 				format.js {render "new.js.erb"}
 			end
 		end
+	end
+
+	def user_params
+		params.require(:user).permit(:email, :password, {avatars:[]})
 	end
 
 end
