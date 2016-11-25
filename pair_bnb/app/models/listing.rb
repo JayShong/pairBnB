@@ -6,14 +6,4 @@ class Listing < ActiveRecord::Base
 
 	default_scope { order(price: :desc) }
 
-	def has_amenities
-	if self.amenities
-      amenities = []
-      amenity_names = @listing.amenities
-      amenity_names.each do |amenity| amenities << amenity.name end
-    end
-
-    if amenities.include?"Wifi"
-        @wifi = true end
-	end
 end
