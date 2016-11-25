@@ -1,6 +1,11 @@
 
 <%= "Reservation for" + @listing.address %>
 
+<p> The following dates had been reserved. </p>
+<% @bookings.each do |booking| %>
+<%= "#{booking.check_in_date}" + " to " + "#{booking.check_out_date}" %><br>
+<% end %>
+<br>
 <%= form_for [@listing, @reservation] do |form| %>
     <%= render partial: '/reservations/form', object: form %>
 
