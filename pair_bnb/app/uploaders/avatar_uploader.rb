@@ -8,10 +8,25 @@ class AvatarUploader < CarrierWave::Uploader::Base
 
   process resize_to_fit: [800,800]
 
-  version :large do process resize_to_limit: [800,800] end
-  version :medium, :from_version => :large do process resize_to_limit: [500,500] end
+  version :large do 
+    process resize_to_limit: [800,800] 
+  end
 
-  version :thumb, :from_version => :medium do process resize_to_fill: [100,100] end
+  version :medium, :from_version => :large do 
+    process resize_to_limit: [500,500] 
+  end
+
+  version :thumb, :from_version => :medium do 
+    process resize_to_fill: [100,100] 
+  end
+
+  version :square do
+    process :resize_to_limit => [300,300]
+  end
+
+  def extension_whitelist
+    %w(jpg jpeg gif png)
+  end
   
   # Choose what kind of storage to use for this uploader:
   storage :fog
