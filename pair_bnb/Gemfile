@@ -49,6 +49,9 @@ gem 'carrierwave', '>=1.0.0.rc', '< 2.0' #, github: 'carrierwaveuploader/carrier
 gem 'fog-aws'
 # gem 'fog', '~>1.0.0'
 
+# check for overlapping reservations
+gem 'validates_overlap'
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug'
