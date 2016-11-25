@@ -50,7 +50,7 @@ ActiveRecord::Schema.define(version: 20161125062708) do
   end
 
   create_table "reservations", force: :cascade do |t|
-    t.integer  "iisting_id"
+    t.integer  "listing_id"
     t.integer  "user_id"
     t.date     "check_in_date"
     t.date     "check_out_date"
