@@ -1,0 +1,19 @@
+<h4>My Reservations</h4>
+
+
+<% if @have_reservations %>
+	<table>
+		<th>Address</th>
+		<th>Check In Date</th>
+		<th>Check Out Date</th>
+	<% @reservations.each do |reservation| %>
+		<% if reservation.check_out_date > Date.today %>
+		<td><%= reservation.listing.address %></td>
+		<td><%= reservation.check_in_date %></td>
+		<td><%= reservation.check_out_date %></td>
+		<% end %>
+	<% end %>
+	</table>
+<% else %>
+		<p> You do not have any reservations. </p>
+<% end %>

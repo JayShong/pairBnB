@@ -9,9 +9,10 @@ Rails.application.routes.draw do
 
   resources :users, only: [:show, :edit, :update, :destroy] 
   resources :listings
-  resources :listings do
-      resources :reservations
+  resources :listings  do
+      resources :reservations, only: [:new, :create, :edit]
     end
+  resources :reservations, only: [:index]
 
 
 
