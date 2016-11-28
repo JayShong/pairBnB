@@ -19,7 +19,9 @@ class ReservationsController < ApplicationController
 		@listing = Listing.find(params[:listing_id])
 		@reservation = Reservation.new()
 		if Reservation.find_by(listing_id: params[:listing_id]).blank?
+			@has_bookings = false
 		else
+			@has_bookings = true
 			@bookings = Reservation.where(listing_id: params[:listing_id]).order('check_in_date ASC')
 		end
 	end
@@ -32,7 +34,7 @@ class ReservationsController < ApplicationController
 
 		respond_to do |format|
 			if @reservation.save
-				ReservationMailer.reservation_email(@reservation.listing.address, current_user.email, @reservation.listing.user.email).deliver_now
+				ReservationMailer.reservation_email(@reservation.listing.address, current_user.email, @reservation.listing.user.email).deliver_later
 				format.html { redirect_to listing_path(params[:listing_id]), notice: 'Reservation was succesfully created.'}
 			else
 				format.html { redirect_to new_listing_reservation_path(params[:listing_id]), notice: 'Reservation cannot be made.'}
