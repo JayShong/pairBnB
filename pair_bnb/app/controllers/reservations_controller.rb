@@ -1,5 +1,20 @@
 class ReservationsController < ApplicationController
 
+	def index
+		@user = User.find(current_user.id)
+
+		if Reservation.find_by(user_id: current_user.id).blank?
+			@have_reservations = false
+		else
+			@reservations = Reservation.where("user_id = ? AND check_out_date > ?", current_user.id, Date.today)
+			if @reservations.blank?
+				@have_reservations = false
+			else
+				@have_reservations = true
+			end
+		end
+	end
+
 	def new
 		@listing = Listing.find(params[:listing_id])
 		@reservation = Reservation.new()
