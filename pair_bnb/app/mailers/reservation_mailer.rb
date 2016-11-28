@@ -1,7 +1,7 @@
 class ReservationMailer < ApplicationMailer
 
 	def reservation_email(listing_address, tenant, landlord_email)
-		byebug
+
 		@user = landlord_email
 		@customer = tenant
 		@listing = listing_address
