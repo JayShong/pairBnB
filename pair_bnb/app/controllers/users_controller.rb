@@ -29,9 +29,9 @@ class UsersController < Clearance::UsersController
 
 		respond_to do |format|
 			if @user.save
-				format.html { redirect_to @user, notice: 'User was succesfully created.'}
+				format.html { redirect_to action: "new", notice: 'User was succesfully created.'}
 				format.js {}
-
+				UserMailer.welcome_email(@user).deliver_now
 			else
 				@user_js = @user.errors.to_json
 				format.html { render action: "new", notice: 'The email has been taken.'}
@@ -40,8 +40,6 @@ class UsersController < Clearance::UsersController
 		end
 	end
 
-	def user_params
-		params.require(:user).permit(:email, :password, {avatars:[]})
-	end
+	private
 
 end
