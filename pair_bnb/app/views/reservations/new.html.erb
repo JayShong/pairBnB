@@ -1,0 +1,15 @@
+
+<h4><%= "Reservation for" + @listing.address %></h4>
+
+<p> The following dates had been reserved. </p>
+<% @bookings.each do |booking| %>
+<%= "#{booking.check_in_date}" + " to " + "#{booking.check_out_date}" %><br>
+<% end %>
+<br>
+<%= form_for [@listing, @reservation] do |form| %>
+    <%= render partial: '/reservations/form', object: form %>
+
+    <div class="submit-field">
+      <%= form.submit %>
+    </div>
+<% end %>

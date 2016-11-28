@@ -24,6 +24,7 @@
 			<td> <%= link_to "Edit", edit_listing_path %></td>
 			<td> <%= link_to "Delete", listing_path(@listing.id), method: :delete %></td>
 			<% end %>
+			<td> <%= link_to "Reserve", new_listing_reservation_path(@listing.id) %></td>
 	</tr>
 	</tbody>
 </table>
