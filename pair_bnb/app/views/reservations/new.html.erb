@@ -1,9 +1,11 @@
 
-<h4><%= "Reservation for" + @listing.address %></h4>
+<h4><%= "Reservation for " + @listing.address %></h4>
 
+<% if @has_bookings %>
 <p> The following dates had been reserved. </p>
 <% @bookings.each do |booking| %>
 <%= "#{booking.check_in_date}" + " to " + "#{booking.check_out_date}" %><br>
+<% end %>
 <% end %>
 <br>
 <%= form_for [@listing, @reservation] do |form| %>
