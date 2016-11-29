@@ -6,11 +6,19 @@
 		<th>Address</th>
 		<th>Check In Date</th>
 		<th>Check Out Date</th>
+		<th></th>
 	<% @reservations.each do |reservation| %>
 		<% if reservation.check_out_date > Date.today %>
+		<tr>
 		<td><%= reservation.listing.address %></td>
 		<td><%= reservation.check_in_date %></td>
 		<td><%= reservation.check_out_date %></td>
+		<%if reservation.payment.nil? %>
+		<td><%= link_to "Make payment", listing_reservation_payment_index_path(listing_id: reservation.listing.id, reservation_id: reservation.id) %></td>
+		<% else %>
+		<td>You had paid for this on <%= reservation.payment.created_at %></td>
+		<% end %>
+		</tr>
 		<% end %>
 	<% end %>
 	</table>
