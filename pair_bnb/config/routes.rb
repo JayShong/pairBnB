@@ -1,10 +1,5 @@
 Rails.application.routes.draw do
 
-
-  get 'payment/index'
-  post "payment/checkout"
-  
-
   get "/sign_in" => "sessions#new", as: "sign_in"
   delete "/sign_out" => "sessions#destroy", as: "sign_out"
   get "/sign_up" => "users#new", as: "sign_up"
@@ -14,11 +9,11 @@ Rails.application.routes.draw do
   resources :users, only: [:show, :edit, :update, :destroy] 
   resources :listings
   resources :listings  do
-      resources :reservations, only: [:new, :create, :edit]
+      resources :reservations, only: [:new, :create, :edit] do
+        resources :payment
+      end
     end
   resources :reservations, only: [:index]
-
-
 
   resources :passwords, controller: "clearance/passwords", only: [:create, :new]
   resource :session, controller: "sessions", only: [:create]

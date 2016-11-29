@@ -1,7 +1,9 @@
-<h1>Payment#index</h1>
-<p>Find me in app/views/payment/index.html.erb</p>
+<h1>Payment#new</h1>
+<p>Find me in app/views/payment/new.html.erb</p>
 
-<form id="checkout-form" action="payment/checkout" method="post">
+<%= @error_messages %>
+
+<form id="checkout-form" action="payment" method="post">
   <div id="error-message"></div>
 
   <label for="card-number">Card Number</label>
@@ -14,7 +16,8 @@
   <div class="hosted-field" id="expiration-date"></div>
 
   <input type="hidden" name="payment_method_nonce">
-  <input type="submit" value="Pay $10" disabled>
+  <input type="hidden" name="amount" value="<%= @amount %>">
+  <input type="submit" value="Pay $<%= @amount %>" >
 </form>
 
 <script>
@@ -22,8 +25,6 @@
 // immediately. In a production-ready integration, you will need to
 // generate a client token on your server (see section below).
 var authorization = "<%= @client_token %>";
-var submit = document.querySelector('input[type="submit"]');
-var form = document.querySelector('#checkout-form');
 
 braintree.client.create({
   authorization: authorization
@@ -66,8 +67,7 @@ braintree.client.create({
       return;
     }
 
-    submit.removeAttribute('disabled');
-
+    var form = document.querySelector('#checkout-form');
     form.addEventListener('submit', function (event) {
       event.preventDefault();
 
