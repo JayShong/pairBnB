@@ -20,8 +20,27 @@ class Search < ActiveRecord::Base
 
 	end
 
-	def self.query_search_builder(filter_params)
+	def self.query(filter_params)
 		# filter_params = {:address=>"Jalan", :location=>"test", :low_price=>"300", :high_price=>"500"}
+		if filter_params[:high_price].empty?
+  		filter_params[:high_price] = 999999
+  		end
+		if filter_params[:low_price].empty?
+  		filter_params[:low_price] = 0
+  		end
 
+  		#begin filtering
+		if filter_params[:address].nil?
+		else
+			@output = Listing.search_address(filter_params[:address])
+		end
+
+		if filter_params[:location].nil?
+		else
+			@output = @output.search_location(filter_params[:location])
+		end
+			@output = @output.where(price: filter_params[:low_price].to_i..filter_params[:high_price].to_i)
+
+		return @output
 	end
 end
