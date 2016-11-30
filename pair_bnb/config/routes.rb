@@ -6,6 +6,9 @@ Rails.application.routes.draw do
   get "/auth/:provider/callback" => "sessions#create_from_omniauth", as: "facebook_sign_up"
   get "/auth/facebook", as: "facebook_sign_in"
 
+  get "/search" => "search#index", as: "searches"
+  post "/search" => "search#create"
+
   resources :users, only: [:show, :edit, :update, :destroy] 
   resources :listings
   resources :listings  do
