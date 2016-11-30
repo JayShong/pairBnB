@@ -1,6 +1,8 @@
 class Listing < ActiveRecord::Base
-	# include PgSearch
-	# multisearchable :against => [:address, :location, :price]
+	include PgSearch
+	pg_search_scope :search_address, :against => :address, :using => {:tsearch => {:any_word => true}}
+	pg_search_scope :search_location, :against => :location, :using => {:tsearch => {:any_word => true, :dictionary => "english"}}
+
 	belongs_to :user
 	has_many :amenity_listings
 	has_many :amenities, through: :amenity_listings
