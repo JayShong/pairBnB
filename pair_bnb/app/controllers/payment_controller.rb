@@ -17,7 +17,7 @@ class PaymentController < ApplicationController
   		@payment = Payment.new(amount: amount, nonce: nonce_from_the_client)
 		respond_to do |format|
 			if @payment.save
-				# ReservationMailer.reservation_email(@reservation.listing.address, current_user.email, @reservation.listing.user.email).deliver_later
+				PaymentMailer.payment_email(Listing.find(params[:listing_id]), amount, current_user).deliver_later
 				Reservation.update(params[:reservation_id], payment_id: @payment.id)
 				format.html { redirect_to reservations_path, notice: 'Reservation for #{listing.address} was succesfully paid for.'}
 			end
