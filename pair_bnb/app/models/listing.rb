@@ -1,8 +1,11 @@
 class Listing < ActiveRecord::Base
+	# include PgSearch
+	# multisearchable :against => [:address, :location, :price]
 	belongs_to :user
 	has_many :amenity_listings
 	has_many :amenities, through: :amenity_listings
 	has_many :reservations
+
 
 
 	default_scope { order(price: :desc) }
