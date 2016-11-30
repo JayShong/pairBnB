@@ -1,11 +1,14 @@
 <p>Find me in app/views/users/edit.html.erb</p>
 
-<h1> Your are logged in as a <%= current_user.role %></h1>
+<h1> You are logged in as <%= current_user.email %>, a <%= current_user.role %>.</h1>
 
 <%= link_to "Listings page", listings_path %>
-
+<% if @user.avatars.empty? %>
+<% else %>
 <p><%= image_tag @user.avatars[0].thumb.url %></p>
+<% end %>
 <p>Upload your profile picture here</p>
+
   <%= form_for @user do |form| %>
   <%= form.file_field :avatars, multiple: true %>
       <%= form.submit %>
