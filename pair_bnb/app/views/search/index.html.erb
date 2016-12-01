@@ -1,19 +1,18 @@
-<h1>Listings</h1>
-<p>Find me in app/views/listings/index.html.erb</p>
-
-  <p>You are logged in as a <%= current_user.role %>.</p>
-
-<% if current_user.role == "landlord" %>
-<%= link_to "Create a New Listing", new_listing_path %>
-<% end %>
-<%= link_to "Profile", edit_user_path(current_user.id) %>
-<%= link_to "My Reservations", reservations_path %>
-<%= link_to "Filter", search_path %>
-
-<div id='calendar'></div>
+<h1>You are in search</h1>
 
 
-<table class="table">
+<%= form_for @search do |form| %>
+    <%= render partial: '/search/form', object: form %>
+
+    <div class="submit-field">
+      <%= form.submit %>
+    </div>
+    <% end %>
+
+
+<% if @listings %>
+<%= flash[:notice] %>
+ <table class="table">
 	<thead>
 		<th>Address</th>
 		<th>Location</th>
@@ -35,5 +34,6 @@
     <% end %>
 	</tbody>
 </table>
-
 <%= will_paginate @listings %>
+<% end %>
+
