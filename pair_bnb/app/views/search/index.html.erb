@@ -19,6 +19,7 @@
 		<th>Price</th>
 		<th>Listed By</th>
 		<th>Description</th>
+		<th>Amenities</th>
 		<th></th>
 	</thead>
 	<tbody>
@@ -29,6 +30,7 @@
 			<td> <%= listing.price %></td>
 			<td> <%= listing.user.email %></td>
 			<td> <%= listing.description %></td>
+			<td> <%= listing.display_amenities%></td>
 			<td> <%= link_to "View", listing_path(id: listing.id) %></td>
 		</tr>
     <% end %>
