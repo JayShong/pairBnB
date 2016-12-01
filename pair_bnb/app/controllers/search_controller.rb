@@ -3,11 +3,13 @@ class SearchController < ApplicationController
     @search = Search.new
   end
 
+  def amenitylisting
+
+  end
 
   def create
   	# Parameters: {search"=>{"address"=>"235", "location"=>"", "low_price"=>"", "high_price"=>""}}
  	params.permit!
-
  	@output = Search.query(params[:search])
 
  	@listings = @output.paginate(:page => params[:page])
