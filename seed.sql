@@ -4,9 +4,9 @@
 -- Re-running is safe: INSERT OR IGNORE keyed on unique emails.
 
 INSERT OR IGNORE INTO users (id, email, name, password_hash, role) VALUES
-  (1, 'morgan@guildhall.example', 'Morgan the Chronicler', '100000:6775696c6468616c6c2d64656d6f2d73:968d989bf4b414cbef8de4eb5ef70f63f30f7bd20dc83aa119d723ad1490d457', 'gm'),
-  (2, 'ash@guildhall.example', 'Ash Winters', '100000:6775696c6468616c6c2d64656d6f2d73:968d989bf4b414cbef8de4eb5ef70f63f30f7bd20dc83aa119d723ad1490d457', 'player'),
-  (3, 'rowan@guildhall.example', 'Rowan Vale', '100000:6775696c6468616c6c2d64656d6f2d73:968d989bf4b414cbef8de4eb5ef70f63f30f7bd20dc83aa119d723ad1490d457', 'player');
+  (1, 'morgan@guildhall.example', 'Morgan the Chronicler', '600000:6775696c6468616c6c2d64656d6f2d73:90da8cfd12dffca91b5d7e274d52b770ad1d8492bb775f84f026f84b9563c8d7', 'gm'),
+  (2, 'ash@guildhall.example', 'Ash Winters', '600000:6775696c6468616c6c2d64656d6f2d73:90da8cfd12dffca91b5d7e274d52b770ad1d8492bb775f84f026f84b9563c8d7', 'player'),
+  (3, 'rowan@guildhall.example', 'Rowan Vale', '600000:6775696c6468616c6c2d64656d6f2d73:90da8cfd12dffca91b5d7e274d52b770ad1d8492bb775f84f026f84b9563c8d7', 'player');
 
 INSERT OR IGNORE INTO characters (id, user_id, name, core_class, attunement, race, faction, status, backstory) VALUES
   (1, 2, 'Seraphine of the Ember Vale', 'Arcane Caster', 'Arcane: Fire', 'Elf', 'Cottontail League', 'active',

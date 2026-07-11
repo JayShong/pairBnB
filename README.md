@@ -111,11 +111,11 @@ push to `master`. Add two repository secrets: `CLOUDFLARE_API_TOKEN`
 `GET /api/health` is the health probe (checks the database).
 `/robots.txt` and `/sitemap.xml` are generated against the site URL.
 
-Passwords are hashed with PBKDF2-SHA256 (100k iterations) via Web Crypto
-and sessions are HMAC-signed cookies, so no native modules or external
-auth service are needed on Workers. Note: password hashing is the most
-CPU-intensive request; the Workers paid plan ($5/mo) comfortably covers
-it and is recommended for production.
+Passwords are hashed with PBKDF2-SHA256 (600k iterations, the OWASP
+recommendation) via Web Crypto and sessions are HMAC-signed cookies, so
+no native modules or external auth service are needed on Workers. The
+hashing work factor assumes the Workers paid plan's CPU allowance
+(login/register exceed the free tier's 10ms CPU cap).
 
 ## Project layout
 

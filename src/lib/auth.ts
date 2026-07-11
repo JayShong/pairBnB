@@ -8,7 +8,11 @@ import { getUserById, type User } from "@/lib/users";
 
 const SESSION_COOKIE = "guildhall_session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 14; // two weeks
-const PBKDF2_ITERATIONS = 100_000;
+// OWASP-recommended work factor for PBKDF2-SHA256. Needs the Workers paid
+// plan's CPU allowance (login/register exceed the free tier's 10ms cap).
+// Verification reads the iteration count from the stored hash, so changing
+// this never invalidates existing passwords.
+const PBKDF2_ITERATIONS = 600_000;
 
 function secret(): string {
   const env = getEnv();
