@@ -1,39 +1,94 @@
-# LARPnB
+# ⚔ Guildhall
 
-A community platform for live action role-play (LARP) events, built on Rails.
+**The gathering place for your LARP community.**
 
-Game masters list their upcoming LARP events — the venue, the region, the
-price per player per day, the pitch for the adventure, and what the event
-provides (props, costume rental, a weapons armory, on-site camping, meals).
-Players browse and search events, book a spot for the event dates, and pay
-for their booking online.
+Game masters post their upcoming live action role-play events — weekend-long
+fantasy campaigns, one-night murder mysteries, wasteland survival runs.
+Players pick an event, book a spot in character, and show up ready to play.
 
-## How it works
+## Features
 
-- **Players** sign up (email or Facebook), search events by venue, region and
-  price, book a spot with their character name, and pay via Braintree.
-- **Game masters** list and manage events, choose the amenities their event
-  provides, and get an email whenever a player books a spot.
-- Any member can switch between the player and game master roles from their
-  profile page.
+- **Events** — game masters post events with venue, region, dates, capacity,
+  price per player, and what the event provides (props, costume rental,
+  weapons armory, on-site camping, meals, safety marshal). Everyone can
+  browse and search by text or genre.
+- **Characters** — every member keeps a roster of characters (name,
+  archetype, backstory) in a public character directory.
+- **Bookings** — players book a spot at an event *as* one of their
+  characters, with an optional note for the game master. Capacity is
+  enforced atomically; the event page shows the live roster, and only the
+  GM sees players' private notes.
+- **Roles** — join as a player or a game master, and switch any time from
+  your profile.
+- **Accounts** — email/password auth with scrypt hashing and signed,
+  http-only session cookies. No third-party auth service required.
 
-## Tech
+## Stack
 
-Rails 4.2 · PostgreSQL (pg_search for event search) · Clearance +
-omniauth-facebook for auth · Braintree for payments · CarrierWave for
-avatar uploads · Sidekiq for background mail delivery.
+- [Next.js 15](https://nextjs.org) (App Router, server components, server
+  actions) with TypeScript and React 19
+- SQLite via [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) —
+  zero-ops persistence; the schema is created automatically on boot
+- No other runtime dependencies: sessions and password hashing use
+  `node:crypto`
 
-## Getting started
+## Local development
+
+```bash
+npm install
+npm run seed     # optional: demo members, characters, and events
+npm run dev      # http://localhost:3000
+```
+
+The seed prints demo credentials (`morgan@guildhall.example` /
+`guildhall-demo` is a game master). The SQLite database lives in
+`data/guildhall.sqlite` (git-ignored).
+
+## Production build
+
+```bash
+npm run build
+SESSION_SECRET=<long random string> npm start
+```
+
+## Deploying to the cloud
+
+The app ships as a self-contained Docker image (Next.js standalone output):
+
+```bash
+docker build -t guildhall .
+docker run -p 3000:3000 \
+  -e SESSION_SECRET=$(openssl rand -hex 32) \
+  -v guildhall-data:/data \
+  guildhall
+```
+
+Works as-is on any container platform (Fly.io, Render, Railway, Cloud Run,
+a VPS). Two things to configure:
+
+| Env var | Purpose |
+| --- | --- |
+| `SESSION_SECRET` | **Required in production.** Signs session cookies — use a long random value and keep it stable across deploys. |
+| `DATABASE_PATH` | Where the SQLite file lives (the Docker image defaults to `/data/guildhall.sqlite`). Mount a persistent volume there. |
+
+`GET /api/health` is the health/readiness probe (checks the database).
+
+To seed a fresh deployment with demo data, run `node scripts/seed.mjs`
+inside the container once.
+
+## Project layout
 
 ```
-cd pair_bnb
-bundle install
-rake db:setup   # creates the db, loads the schema, and seeds sample events
-rails server
+src/lib/          database, auth, and data-access modules
+src/app/          App Router pages and server actions
+  events/         browse, search, post, event detail + booking
+  characters/     directory + character creation
+  profile/        role switching, my bookings, my events, my characters
+  api/health/     cloud health probe
+scripts/seed.mjs  demo data
 ```
 
-Seeding creates the standard amenity list, a sample game master account, and
-a handful of example events to explore.
+---
 
-_This project began life as pairBnB, an Airbnb-style clone, and has been
-refactored for the LARP community._
+*This repository previously hosted pairBnB, a Rails Airbnb-style clone. It
+has been replaced by Guildhall; the old code remains in git history.*
