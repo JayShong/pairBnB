@@ -62,27 +62,49 @@ npm run build
 SESSION_SECRET=<long random string> npm start
 ```
 
-## Deploying to the cloud
+## Hosting at larp.jasonshong.com
 
-The app ships as a self-contained Docker image (Next.js standalone output):
+The production site lives at **https://larp.jasonshong.com**. The app ships
+as a self-contained Docker image (Next.js standalone output); the GitHub
+Actions workflow in `.github/workflows/docker.yml` builds and publishes it
+to `ghcr.io/jayshong/pairbnb:latest` on every push to `master`.
 
-```bash
-docker build -t guildhall .
-docker run -p 3000:3000 \
-  -e SESSION_SECRET=$(openssl rand -hex 32) \
-  -v guildhall-data:/data \
-  guildhall
-```
+### One-time setup on any VPS
 
-Works as-is on any container platform (Fly.io, Render, Railway, Cloud Run,
-a VPS). Two things to configure:
+1. **DNS** — create an `A` (and `AAAA` if you have IPv6) record for
+   `larp.jasonshong.com` pointing at the server's IP.
+2. Copy the `deploy/` directory to the server and create `deploy/.env`:
+   ```bash
+   echo "SESSION_SECRET=$(openssl rand -hex 32)" > deploy/.env
+   ```
+3. Start it:
+   ```bash
+   cd deploy && docker compose up -d
+   ```
+
+That's the whole deployment: Caddy terminates TLS (it obtains and renews
+the Let's Encrypt certificate for `larp.jasonshong.com` automatically,
+with HSTS and security headers), proxies to the app, and the SQLite
+database persists in the `guildhall-data` volume. Pull updates with
+`docker compose pull && docker compose up -d`.
+
+### Using a PaaS instead
+
+The image runs as-is on Fly.io, Render, Railway, or Cloud Run: deploy
+`ghcr.io/jayshong/pairbnb:latest`, mount a persistent volume at `/data`,
+set the env vars below, then add `larp.jasonshong.com` as a custom domain
+in the platform's dashboard and create the CNAME record it gives you.
+
+### Configuration
 
 | Env var | Purpose |
 | --- | --- |
 | `SESSION_SECRET` | **Required in production.** Signs session cookies — use a long random value and keep it stable across deploys. |
+| `NEXT_PUBLIC_SITE_URL` | Canonical site origin. Defaults to `https://larp.jasonshong.com`; override for staging. |
 | `DATABASE_PATH` | Where the SQLite file lives (the Docker image defaults to `/data/guildhall.sqlite`). Mount a persistent volume there. |
 
 `GET /api/health` is the health/readiness probe (checks the database).
+`/robots.txt` and `/sitemap.xml` are generated against the site URL.
 
 To seed a fresh deployment with demo data, run `node scripts/seed.mjs`
 inside the container once.

@@ -2,12 +2,23 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { logoutAction } from "@/app/login/actions";
+import { SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Guildhall — the gathering place for your LARP community",
+  metadataBase: new URL(SITE_URL),
+  title: `${SITE_NAME} — ${SITE_TAGLINE.toLowerCase()}`,
   description:
-    "Browse live action role-play events, book your spot in character, and keep your character roster in one place.",
+    "Browse Maelstrom LARP events on the Shards, create rulebook-legal characters, and book your spot in character.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: `${SITE_NAME} — ${SITE_TAGLINE.toLowerCase()}`,
+    description:
+      "Browse Maelstrom LARP events on the Shards, create rulebook-legal characters, and book your spot in character.",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    type: "website",
+  },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
