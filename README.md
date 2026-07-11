@@ -71,34 +71,40 @@ Cloudflare account that holds the `jasonshong.com` zone, so deploying
 creates the DNS record and TLS certificate for the subdomain
 automatically.
 
-### One-time setup
+### Deploying from GitHub (no CLI needed)
+
+`.github/workflows/deploy.yml` is fully self-bootstrapping: on every push
+to `master` (or a manual run) it creates the `guildhall` D1 database if it
+doesn't exist, injects its id, applies migrations, deploys the Worker —
+which auto-provisions the `larp.jasonshong.com` DNS record and certificate
+— and sets `SESSION_SECRET` on the first run. A manual run can optionally
+load the demo data.
+
+One-time setup, all doable from a phone:
+
+1. **Cloudflare dashboard** → My Profile → API Tokens → Create Token →
+   use the **"Edit Cloudflare Workers"** template and *add* the permission
+   **Account → D1 → Edit**. Copy the token.
+2. Copy your **Account ID** (Workers & Pages overview, right sidebar).
+3. **GitHub** → repo Settings → Secrets and variables → Actions → add:
+   `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and `SESSION_SECRET`
+   (any long random string, 40+ characters).
+4. Merge to `master` (or run the workflow manually from the Actions tab).
+
+### Deploying from a machine with the CLI (alternative)
 
 ```bash
-npx wrangler login                          # authenticate with your Cloudflare account
-npx wrangler d1 create guildhall            # create the database
-#   → copy the printed database_id into wrangler.jsonc
-npm run db:migrate:remote                   # create the schema
+npx wrangler login
+npx wrangler d1 create guildhall            # copy the printed id into wrangler.jsonc
+npm run db:migrate:remote
 npm run db:seed:remote                      # optional demo data
-npx wrangler secret put SESSION_SECRET      # paste a long random string
-```
-
-### Deploy
-
-```bash
+npx wrangler secret put SESSION_SECRET
 npm run deploy
 ```
 
-That's it — the `routes` entry in `wrangler.jsonc` registers
+Either way, the `routes` entry in `wrangler.jsonc` registers
 `larp.jasonshong.com` as a Workers custom domain, which provisions the
-DNS record and certificate in your zone automatically. No dashboard
-clicking required.
-
-### Continuous deployment (optional)
-
-`.github/workflows/deploy.yml` applies D1 migrations and deploys on every
-push to `master`. Add two repository secrets: `CLOUDFLARE_API_TOKEN`
-(Workers Scripts:Edit + D1:Edit + Zone DNS:Edit for jasonshong.com) and
-`CLOUDFLARE_ACCOUNT_ID`.
+DNS record and certificate in your zone automatically.
 
 ### Configuration
 
