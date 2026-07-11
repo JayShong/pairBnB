@@ -1,11 +1,11 @@
-<h1>You are in search</h1>
+<h1>Find a LARP event</h1>
 
 
 <%= form_for @search do |form| %>
     <%= render partial: '/search/form', object: form %>
 
     <div class="submit-field">
-      <%= form.submit %>
+      <%= form.submit "Search events" %>
     </div>
     <% end %>
 
@@ -14,11 +14,11 @@
 <%= flash[:notice] %>
  <table class="table">
 	<thead>
-		<th>Address</th>
-		<th>Location</th>
-		<th>Price</th>
-		<th>Listed By</th>
-		<th>Description</th>
+		<th>Venue</th>
+		<th>Region</th>
+		<th>Price / day</th>
+		<th>Game Master</th>
+		<th>The Adventure</th>
 		<th>Amenities</th>
 		<th></th>
 	</thead>
@@ -30,7 +30,7 @@
 			<td> <%= listing.price %></td>
 			<td> <%= listing.user.email %></td>
 			<td> <%= listing.description %></td>
-			<td> <%= listing.display_amenities%></td>
+			<td> <%= listing.amenity_names %></td>
 			<td> <%= link_to "View", listing_path(id: listing.id) %></td>
 		</tr>
     <% end %>
@@ -38,4 +38,3 @@
 </table>
 <%= will_paginate @listings %>
 <% end %>
-

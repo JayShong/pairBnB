@@ -1,4 +1,13 @@
+<h1>Welcome to LARPnB</h1>
 
-<p>Find me in app/views/welcome/index.html.erb</p>
+<p>The home base for our live action role-play community. Game masters list
+their upcoming LARP events — from weekend-long fantasy campaigns to one-night
+mystery games — and players book their spot, gear up, and step into character.</p>
 
-<%= link_to "Listings page", listings_path %>
+<ul>
+  <li><%= link_to "Browse LARP events", listings_path %></li>
+  <li><%= link_to "Find an event near you", search_path %></li>
+  <% unless signed_in? %>
+  <li><%= link_to "Join the community", sign_up_path %></li>
+  <% end %>
+</ul>

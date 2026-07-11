@@ -1,34 +1,32 @@
-<p>Find me in app/views/listings/new.html.erb</p>
-
-
-<h1> Create your listing here</h1>
+<h1>Host a new LARP event</h1>
   <%= form_for @listing do |form| %>
   	<div class="text-field">
- 	 <%= form.label :address %>
+ 	 <%= form.label :address, "Venue address" %>
   	 <%= form.text_field :address %>
 	</div>
 
 	<div class="text-field">
- 	 <%= form.label :location %>
+ 	 <%= form.label :location, "Region" %>
  	 <%= form.text_field :location %>
 	</div>
 
 	<div class="number-field">
- 	 <%= form.label :price %>
+ 	 <%= form.label :price, "Price per player per day" %>
  	 <%= form.number_field :price %>
 	</div>
 
 	<div class="text-field">
- 	 <%= form.label :description %>
+ 	 <%= form.label :description, "Describe the adventure" %>
  	 <%= form.text_field :description %>
 	</div>
 
-<!-- to list amenities -->
+<!-- amenities offered at the event -->
+	<p>What does your event provide?</p>
 	<%= form.fields_for :amenitylisting do |amenity| %>
 	<%= amenity.collection_check_boxes :amenity_ids, Amenity.all, :id, :name %>
 	<% end %>
 
     <div class="submit-field">
-      <%= form.submit %>
+      <%= form.submit "List this event" %>
     </div>
   <% end %>

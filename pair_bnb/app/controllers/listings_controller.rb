@@ -8,130 +8,60 @@ class ListingsController < ApplicationController
   end
 
   def create
-    input = listings_params
-    input[:user_id] = current_user.id
+    @listing = Listing.new(listing_params)
+    @listing.user_id = current_user.id
 
-    @listing = Listing.create(input)
-
-    # since amenity inputs are in the form of 1, 2, 3. 
-    # We build amenitylisting records via identification of such numbers
-    amenity_inputs = params[:listing][:amenitylisting][:amenity_ids].join
-    if amenity_inputs.include?("1") #wifi
-      AmenityListing.create(listing_id: @listing.id, amenity_id: 1)
-    end
-    if amenity_inputs.include?("2") #microwave_oven
-      AmenityListing.create(listing_id: @listing.id, amenity_id: 2)
-    end
-    if amenity_inputs.include?("3") #kettle
-      AmenityListing.create(listing_id: @listing.id, amenity_id: 3)
-    end
-    if amenity_inputs.include?("4") #washing_machine
-      AmenityListing.create(listing_id: @listing.id, amenity_id: 4)
-    end
-    if amenity_inputs.include?("5") #kitchen_utensils
-      AmenityListing.create(listing_id: @listing.id, amenity_id: 5)
-    end
-    # end tying amenities to listing
-
-        respond_to do |format|
+    respond_to do |format|
       if @listing.save
-        format.html { redirect_to listing_path(id: @listing.id), notice: 'Listing was succesfully created.'}
+        sync_amenities(@listing)
+        format.html { redirect_to listing_path(id: @listing.id), notice: 'Your LARP event was successfully listed.'}
         format.js {}
+      else
+        format.html { render :new }
       end
     end
   end
 
   def show
     @listing = Listing.find(params[:id])
-    if @listing.amenities
-      amenities = []
-      amenity_names = @listing.amenities
-      amenity_names.each do |amenity| amenities << amenity.name end
-    end
-
-    if amenities.include?"Wifi"
-        @wifi = true end
-    if amenities.include?"Microwave Oven"
-        @microwave = true end
-    if amenities.include?"Kettle"
-        @kettle = true end
-    if amenities.include?"Washing Machine"
-        @washing_machine = true end
-    if amenities.include?"Kitchen Utensils"
-        @utensils = true end
-    end
+  end
 
   def edit
     @listing = Listing.find(params[:id])
-
   end
 
   def update
+    @listing = Listing.update(params[:id], listing_params)
+    sync_amenities(@listing)
 
-    @editted_listing = Listing.update(params[:id], listing_params)
-
-    amenity_inputs = params[:listing][:amenitylisting][:amenity_ids].join
-    if amenity_inputs.include?("1") #wifi
-      AmenityListing.create(listing_id: @editted_listing.id, amenity_id: 1)
-    else
-      if AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 1).blank?
-      else
-         AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 1).destroy
-      end
-    end
-
-    if amenity_inputs.include?("2") #microwave_oven
-      AmenityListing.create(listing_id: @editted_listing.id, amenity_id: 2)
-    else
-      if AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 2).blank?
-      else
-         AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 2).destroy
-      end
-    end
-
-    if amenity_inputs.include?("3") #kettle
-      AmenityListing.create(listing_id: @editted_listing.id, amenity_id: 3)
-    else
-      if AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 3).blank?
-      else
-         AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 3).destroy
-      end
-    end
-
-    if amenity_inputs.include?("4") #washing_machine
-      AmenityListing.create(listing_id: @editted_listing.id, amenity_id: 4)
-    else
-      if AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 4).blank?
-      else
-         AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 4).destroy
-      end
-    end
-    
-    if amenity_inputs.include?("5") #kitchen_utensils
-      AmenityListing.create(listing_id: @editted_listing.id, amenity_id: 5)
-    else
-      if AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 5).blank?
-      else
-         AmenityListing.find_by(listing_id: @editted_listing.id, amenity_id: 5).destroy
-      end
-    end
-    redirect_to listing_path(id: params[:id])
+    redirect_to listing_path(id: params[:id]), notice: 'Your LARP event was updated.'
   end
 
   def destroy
     Listing.find(params[:id]).destroy
 
-    redirect_to listings_path
+    redirect_to listings_path, notice: 'Your LARP event was removed.'
   end
 
   private
-
-  def listings_params
-    params.require(:listing).permit(:address, :location, :price, :description, :user_id)
-  end
 
   def listing_params
     params.require(:listing).permit(:address, :location, :price, :description)
   end
 
+  # Creates or removes AmenityListing rows so the event's amenities match
+  # the checkboxes submitted with the form.
+  def sync_amenities(listing)
+    selected_ids = params[:listing].fetch(:amenitylisting, {}).fetch(:amenity_ids, [])
+    selected_ids = selected_ids.reject(&:blank?).map(&:to_i)
+
+    Amenity.pluck(:id).each do |amenity_id|
+      existing = AmenityListing.find_by(listing_id: listing.id, amenity_id: amenity_id)
+      if selected_ids.include?(amenity_id)
+        AmenityListing.create(listing_id: listing.id, amenity_id: amenity_id) if existing.nil?
+      elsif existing
+        existing.destroy
+      end
+    end
+  end
 end

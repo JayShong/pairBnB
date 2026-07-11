@@ -1,15 +1,12 @@
-
-<p>Find me in app/views/listings/show.html.erb</p>
-
-<%= link_to "Listings page", listings_path %>
+<%= link_to "All LARP events", listings_path %>
 
 <table>
 	<thead>
-		<th>Address</th>
-		<th>Location</th>
-		<th>Price</th>
-		<th>Listed By</th>
-		<th>Description</th>
+		<th>Venue</th>
+		<th>Region</th>
+		<th>Price / day</th>
+		<th>Game Master</th>
+		<th>The Adventure</th>
 		<th>Amenities</th>
 	</thead>
 	<tbody>
@@ -19,12 +16,12 @@
 			<td> <%= @listing.price %></td>
 			<td> <%= @listing.user.email %></td>
 			<td> <%= @listing.description %></td>
-			<td> <%= @listing.display_amenities %></td>
-			<% if current_user.role == "landlord" %>
+			<td> <%= @listing.amenity_names %></td>
+			<% if signed_in? && current_user.game_master? %>
 			<td> <%= link_to "Edit", edit_listing_path %></td>
 			<td> <%= link_to "Delete", listing_path(@listing.id), method: :delete %></td>
 			<% end %>
-			<td> <%= link_to "Reserve", new_listing_reservation_path(@listing.id) %></td>
+			<td> <%= link_to "Book a spot", new_listing_reservation_path(@listing.id) %></td>
 	</tr>
 	</tbody>
 </table>

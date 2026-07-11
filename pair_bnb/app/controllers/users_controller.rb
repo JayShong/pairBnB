@@ -1,8 +1,5 @@
 class UsersController < Clearance::UsersController
 	def edit
-	end
-
-	def edit
 		@user = User.find(current_user.id)
 	end
 
@@ -14,12 +11,13 @@ class UsersController < Clearance::UsersController
 			User.update(params[:id], params[:user])
 		end
 
-		if params[:commit] == "I am a landlord." || "I am a tenant."
-			if @user.role == "tenant"
-				User.update(current_user.id, role: 1)
-			elsif @user.role == "landlord"
-				User.update(current_user.id, role: 0)
-			end
+		# The profile page offers a single button that switches the member
+		# between playing in events and running them as a game master.
+		case params[:commit]
+		when "I am a game master."
+			@user.game_master!
+		when "I am a player."
+			@user.player!
 		end
 		redirect_to edit_user_path
 	end

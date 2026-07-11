@@ -1,15 +1,13 @@
 class ReservationMailer < ApplicationMailer
 
-	def reservation_email(listing_address, tenant, landlord_email)
+	# Lets the game master know a player has booked a spot at their event.
+	def reservation_email(listing_address, player_email, game_master_email)
 
-		@user = landlord_email
-		@customer = tenant
+		@user = game_master_email
+		@customer = player_email
 		@listing = listing_address
 		@url = 'http://localhost:3000'
-		mail(to: @user, 
-		 	subject: "hello!") #do |format|
-		# 	format.html { render 'welcome_email'}
-		# 	format.text { render text: 'welcome_email'}
-		# end
+		mail(to: @user,
+		 	subject: "A player booked a spot at your LARP event!")
 	end
 end

@@ -35,6 +35,7 @@ en:
   layouts:
     application:
       sign_in: Sign in
+      sign_in_with_Facebook: Sign in with Facebook
       sign_out: Sign out
   passwords:
     create:

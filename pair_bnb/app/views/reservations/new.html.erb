@@ -1,8 +1,8 @@
 
-<h4><%= "Reservation for " + @listing.address %></h4>
+<h4><%= "Book your spot at " + @listing.address %></h4>
 
 <% if @has_bookings %>
-<p> The following dates had been reserved. </p>
+<p> These dates are already booked: </p>
 <% @bookings.each do |booking| %>
 <%= "#{booking.check_in_date}" + " to " + "#{booking.check_out_date}" %><br>
 <% end %>
@@ -12,6 +12,6 @@
     <%= render partial: '/reservations/form', object: form %>
 
     <div class="submit-field">
-      <%= form.submit %>
+      <%= form.submit "Book my spot" %>
     </div>
 <% end %>

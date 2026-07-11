@@ -1,13 +1,10 @@
 class PaymentMailer < ApplicationMailer
-	def payment_email(listing, amount, tenant)
+	def payment_email(listing, amount, player)
 
-		@user = tenant
+		@user = player
 		@amount = amount
 		@listing_address = listing.address
-		mail(to: @user.email, 
-		 	subject: "Payment confirmation.") #do |format|
-		# 	format.html { render 'welcome_email'}
-		# 	format.text { render text: 'welcome_email'}
-		# end
+		mail(to: @user.email,
+		 	subject: "LARPnB payment confirmation")
 	end
 end

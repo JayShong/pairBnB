@@ -1,11 +1,11 @@
-<h4>My Reservations</h4>
+<h4>My Event Bookings</h4>
 
 
 <% if @have_reservations %>
 	<table>
-		<th>Address</th>
-		<th>Check In Date</th>
-		<th>Check Out Date</th>
+		<th>Event venue</th>
+		<th>Event starts</th>
+		<th>Event ends</th>
 		<th></th>
 	<% @reservations.each do |reservation| %>
 		<% if reservation.check_out_date > Date.today %>
@@ -14,14 +14,14 @@
 		<td><%= reservation.check_in_date %></td>
 		<td><%= reservation.check_out_date %></td>
 		<%if reservation.payment.nil? %>
-		<td><%= link_to "Make payment", listing_reservation_payment_index_path(listing_id: reservation.listing.id, reservation_id: reservation.id) %></td>
+		<td><%= link_to "Pay for your spot", listing_reservation_payment_index_path(listing_id: reservation.listing.id, reservation_id: reservation.id) %></td>
 		<% else %>
-		<td>You had paid for this on <%= reservation.payment.created_at %></td>
+		<td>You paid for this on <%= reservation.payment.created_at %></td>
 		<% end %>
 		</tr>
 		<% end %>
 	<% end %>
 	</table>
 <% else %>
-		<p> You do not have any reservations. </p>
+		<p> You have no upcoming event bookings. Time to find your next adventure! </p>
 <% end %>

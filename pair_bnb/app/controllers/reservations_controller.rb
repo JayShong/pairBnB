@@ -35,9 +35,9 @@ class ReservationsController < ApplicationController
 		respond_to do |format|
 			if @reservation.save
 				ReservationMailer.reservation_email(@reservation.listing.address, current_user.email, @reservation.listing.user.email).deliver_later
-				format.html { redirect_to listing_path(params[:listing_id]), notice: 'Reservation was succesfully created.'}
+				format.html { redirect_to listing_path(params[:listing_id]), notice: 'Your spot at this event is booked.'}
 			else
-				format.html { redirect_to new_listing_reservation_path(params[:listing_id]), notice: 'Reservation cannot be made.'}
+				format.html { redirect_to new_listing_reservation_path(params[:listing_id]), notice: 'Those dates clash with an existing booking.'}
 			end
 		end
 	end

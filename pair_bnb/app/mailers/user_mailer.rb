@@ -4,10 +4,7 @@ class UserMailer < ApplicationMailer
 	def welcome_email(user)
 		@user = user
 		@url = 'http://localhost:3000'
-		mail(to: @user.email, 
-		 	subject: "hello!") #do |format|
-		# 	format.html { render 'welcome_email'}
-		# 	format.text { render text: 'welcome_email'}
-		# end
+		mail(to: @user.email,
+		 	subject: "Welcome to LARPnB!")
 	end
 end

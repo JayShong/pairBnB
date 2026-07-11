@@ -1,25 +1,26 @@
-<h1>Listings</h1>
-<p>Find me in app/views/listings/index.html.erb</p>
+<h1>Upcoming LARP Events</h1>
 
-  <p>You are logged in as a <%= current_user.role %>.</p>
+<% if signed_in? %>
+  <p>You are logged in as a <%= current_user.role.humanize.downcase %>.</p>
 
-<% if current_user.role == "landlord" %>
-<%= link_to "Create a New Listing", new_listing_path %>
+  <% if current_user.game_master? %>
+  <%= link_to "Host a New LARP Event", new_listing_path %>
+  <% end %>
+  <%= link_to "Profile", edit_user_path(current_user.id) %>
+  <%= link_to "My Bookings", reservations_path %>
 <% end %>
-<%= link_to "Profile", edit_user_path(current_user.id) %>
-<%= link_to "My Reservations", reservations_path %>
-<%= link_to "Filter", search_path %>
+<%= link_to "Find an Event", search_path %>
 
 <div id='calendar'></div>
 
 
 <table class="table">
 	<thead>
-		<th>Address</th>
-		<th>Location</th>
-		<th>Price</th>
-		<th>Listed By</th>
-		<th>Description</th>
+		<th>Venue</th>
+		<th>Region</th>
+		<th>Price / day</th>
+		<th>Game Master</th>
+		<th>The Adventure</th>
 		<th>Amenities</th>
 		<th></th>
 	</thead>
@@ -31,7 +32,7 @@
 			<td> <%= listing.price %></td>
 			<td> <%= listing.user.email %></td>
 			<td> <%= listing.description %></td>
-			<td> <%= listing.display_amenities%></td>
+			<td> <%= listing.amenity_names %></td>
 			<td> <%= link_to "View", listing_path(id: listing.id) %></td>
 		</tr>
     <% end %>
