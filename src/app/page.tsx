@@ -9,11 +9,11 @@ export default async function HomePage() {
   return (
     <>
       <section className="hero">
-        <h1>The gathering place for your LARP community</h1>
+        <h1>The gathering place for the Maelstrom LARP community</h1>
         <p>
-          Game masters post their upcoming adventures — weekend-long fantasy campaigns, one-night
-          murder mysteries, wasteland survival runs. Players pick an event, book a spot in
-          character, and show up ready to play.
+          The world of Armis shattered, and we play in the pieces. Game masters post the next
+          adventures on the Shards — campaigns, one-shots, skirmish nights, tavern socials — and
+          players book a spot in character: 3 Hit Points, 3 Silver, and a story worth telling.
         </p>
         <div className="hero-actions">
           <Link className="button" href="/events">
@@ -29,7 +29,14 @@ export default async function HomePage() {
               Post an event
             </Link>
           )}
+          <Link className="button secondary" href="/lore">
+            Read the lore
+          </Link>
         </div>
+        <p className="muted">
+          New to Maelstrom? Start with the <Link href="/rules">quick rules reference</Link>, then{" "}
+          <Link href="/characters/new">create your first character</Link>.
+        </p>
       </section>
 
       <section>

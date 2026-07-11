@@ -28,7 +28,11 @@ CREATE TABLE IF NOT EXISTS characters (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   name       TEXT NOT NULL,
-  archetype  TEXT NOT NULL,
+  core_class TEXT NOT NULL,
+  attunement TEXT NOT NULL DEFAULT '',
+  race       TEXT NOT NULL DEFAULT 'Human',
+  faction    TEXT NOT NULL DEFAULT 'Independent / Own Faction',
+  status     TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'fallen')),
   backstory  TEXT NOT NULL DEFAULT '',
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -73,7 +77,8 @@ const insertUser = db.prepare(
   "INSERT INTO users (email, name, password_hash, role) VALUES (?, ?, ?, ?)"
 );
 const insertCharacter = db.prepare(
-  "INSERT INTO characters (user_id, name, archetype, backstory) VALUES (?, ?, ?, ?)"
+  `INSERT INTO characters (user_id, name, core_class, attunement, race, faction, status, backstory)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 );
 const insertEvent = db.prepare(
   `INSERT INTO events (gm_id, title, genre, description, venue, region, starts_on, ends_on, capacity, price, amenities)
@@ -91,14 +96,32 @@ const player2 = insertUser.run("rowan@guildhall.example", "Rowan Vale", password
 const char1 = insertCharacter.run(
   player1.lastInsertRowid,
   "Seraphine of the Ember Vale",
-  "Mage",
-  "Exiled court pyromancer looking for a place to belong."
+  "Arcane Caster",
+  "Arcane: Fire",
+  "Elf",
+  "Cottontail League",
+  "active",
+  "A court pyromancer of old Armis. She woke on a burning Shard with mundane trinkets, three silver, and fire in her veins."
 );
 const char2 = insertCharacter.run(
   player2.lastInsertRowid,
   "Krag Ironjaw",
-  "Warrior",
-  "A retired pit fighter who swore off violence — mostly."
+  "Fighter",
+  "",
+  "Orc",
+  "He Guo",
+  "active",
+  "A retired pit fighter turned caravan guard for a He Guo trade province. Swore off violence — the Maelstrom had other plans."
+);
+insertCharacter.run(
+  player2.lastInsertRowid,
+  "Willem the Unlucky",
+  "Rogue",
+  "",
+  "Human",
+  "Tuscan Empire",
+  "fallen",
+  "A Second Son who picked the wrong pocket on the wrong Shard. His bleedout timer ran its ten minutes. Remember him."
 );
 
 const inDays = (n) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
@@ -106,46 +129,67 @@ const inDays = (n) => new Date(Date.now() + n * 86400000).toISOString().slice(0,
 const blackwood = insertEvent.run(
   gm.lastInsertRowid,
   "The Blackwood Chronicles",
-  "Fantasy",
-  "A weekend-long dark fantasy campaign of feuding clans and forest spirits. Bring boots you can run in; the woods do not forgive.",
+  "Main Campaign",
+  "A weekend on a forest Shard where the trees whisper in green lightning. Feuding clans, forest spirits, and a Cottontail cell that needs help. Check in at the Info Desk from 4pm Friday; weapon and costume inspection before TIME IN.",
   "Blackwood Forest Campground, Trail 7",
-  "Blackwood",
+  "Blackwood Shard",
   inDays(21),
   inDays(23),
   30,
   45,
-  JSON.stringify(["Props provided", "On-site camping", "Meals included", "Safety marshal"])
+  JSON.stringify([
+    "Props provided",
+    "Weapon & costume inspection",
+    "On-site camping",
+    "Meals included",
+    "First aiders on site",
+  ])
 );
 
 insertEvent.run(
   gm.lastInsertRowid,
-  "Court of Ravens",
-  "Mystery",
-  "Political intrigue and masquerade in a real castle. Formal garb required — the costume desk can outfit you.",
+  "Court of the Second Sons",
+  "One-Shot Adventure",
+  "A Tuscan governor hosts a masquerade to root out Cottontail sympathisers — and everyone is invited. Political intrigue in a real castle; formal garb required, the costume desk can outfit you.",
   "Ravenhurst Castle, 12 Keep Road",
-  "Ravenhurst",
+  "Ravenhurst Shard",
   inDays(45),
   inDays(46),
   40,
   80,
-  JSON.stringify(["Costume rental", "Meals included", "Safety marshal"])
+  JSON.stringify(["Costume rental", "Meals included", "First aiders on site"])
 );
 
 insertEvent.run(
   gm.lastInsertRowid,
-  "Wasteland 2099",
-  "Post-apocalyptic",
-  "Scavenge, trade, and outlast the raiders across an abandoned quarry. Latex weapons checked at the armory gate.",
+  "Skirmish at the Quarry",
+  "Skirmish Night",
+  "An evening of battle games at the old quarry: capture the banner, hold the ridge, last warband standing. Loaner boffers available; all weapons pass inspection at the gate. Spell packets provided for casters.",
   "Old Quarry Field, Gate B",
-  "Stonehaven",
+  "Stonehaven Shard",
   inDays(60),
-  inDays(62),
+  inDays(60),
   50,
-  30,
-  JSON.stringify(["Weapons armory", "On-site camping", "Props provided"])
+  15,
+  JSON.stringify([
+    "Loaner weapons",
+    "Weapon & costume inspection",
+    "Spell packets provided",
+    "First aiders on site",
+  ])
 );
 
-insertSignup.run(blackwood.lastInsertRowid, player1.lastInsertRowid, char1.lastInsertRowid, "Arriving Friday evening.");
-insertSignup.run(blackwood.lastInsertRowid, player2.lastInsertRowid, char2.lastInsertRowid, "Vegetarian meals please.");
+insertSignup.run(
+  blackwood.lastInsertRowid,
+  player1.lastInsertRowid,
+  char1.lastInsertRowid,
+  "Arriving Friday evening."
+);
+insertSignup.run(
+  blackwood.lastInsertRowid,
+  player2.lastInsertRowid,
+  char2.lastInsertRowid,
+  "Vegetarian meals please."
+);
 
 console.log("Seeded demo data. Sign in as morgan@guildhall.example / guildhall-demo (game master).");

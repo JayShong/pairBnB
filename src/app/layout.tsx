@@ -23,6 +23,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <nav>
             <Link href="/events">Events</Link>
             <Link href="/characters">Characters</Link>
+            <Link href="/rules">Rules</Link>
+            <Link href="/lore">Lore</Link>
             {user ? (
               <>
                 <Link href="/profile">{user.name}</Link>
@@ -44,7 +46,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </header>
         <main>{children}</main>
         <footer className="site-footer">
-          <p>Guildhall — built by LARPers, for LARPers. See you in character.</p>
+          <p>Guildhall — home of the Maelstrom LARP community. See you on the Shards.</p>
         </footer>
       </body>
     </html>

@@ -1,23 +1,10 @@
 import { getDb } from "@/lib/db";
+import { EVENT_AMENITIES, EVENT_TYPES } from "@/lib/maelstrom";
 
-export const GENRES = [
-  "Fantasy",
-  "Post-apocalyptic",
-  "Horror",
-  "Sci-fi",
-  "Historical",
-  "Mystery",
-  "Other",
-] as const;
-
-export const AMENITIES = [
-  "Props provided",
-  "Costume rental",
-  "Weapons armory",
-  "On-site camping",
-  "Meals included",
-  "Safety marshal",
-] as const;
+// Kept as named re-exports so event code reads naturally; the underlying
+// `genre` column now stores the Maelstrom event type.
+export const GENRES = EVENT_TYPES;
+export const AMENITIES = EVENT_AMENITIES;
 
 export interface Event {
   id: number;
@@ -45,7 +32,8 @@ export interface RosterEntry {
   user_id: number;
   player_name: string;
   character_name: string;
-  archetype: string;
+  core_class: string;
+  faction: string;
   note: string;
 }
 
@@ -139,7 +127,7 @@ export function rosterForEvent(eventId: number): RosterEntry[] {
   return getDb()
     .prepare(
       `SELECT s.id AS signup_id, s.user_id, u.name AS player_name,
-              c.name AS character_name, c.archetype, s.note
+              c.name AS character_name, c.core_class, c.faction, s.note
        FROM signups s
        JOIN users u ON u.id = s.user_id
        JOIN characters c ON c.id = s.character_id
@@ -201,10 +189,13 @@ export function createSignup(input: {
     if (event.gm_id === input.userId) throw new Error("You are running this event — no need to book a spot.");
 
     const character = db
-      .prepare("SELECT user_id FROM characters WHERE id = ?")
-      .get(input.characterId) as { user_id: number } | undefined;
+      .prepare("SELECT user_id, status FROM characters WHERE id = ?")
+      .get(input.characterId) as { user_id: number; status: string } | undefined;
     if (!character || character.user_id !== input.userId) {
       throw new Error("Pick one of your own characters.");
+    }
+    if (character.status !== "active") {
+      throw new Error("That character has fallen — death is permanent in the Maelstrom. Create a new character.");
     }
 
     const taken = db

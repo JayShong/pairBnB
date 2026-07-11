@@ -16,7 +16,11 @@ CREATE TABLE IF NOT EXISTS characters (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   name       TEXT NOT NULL,
-  archetype  TEXT NOT NULL,
+  core_class TEXT NOT NULL,
+  attunement TEXT NOT NULL DEFAULT '',
+  race       TEXT NOT NULL DEFAULT 'Human',
+  faction    TEXT NOT NULL DEFAULT 'Independent / Own Faction',
+  status     TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'fallen')),
   backstory  TEXT NOT NULL DEFAULT '',
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -59,8 +63,24 @@ function open(): Database.Database {
   const db = new Database(file);
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");
+  migrateLegacyCharacters(db);
   db.exec(SCHEMA);
   return db;
+}
+
+// Pre-release databases (before the Maelstrom rulebook integration) used an
+// `archetype` column on characters. Those dev databases carry only seed/demo
+// data, so rebuild the affected tables instead of migrating rows.
+function migrateLegacyCharacters(db: Database.Database): void {
+  const table = db
+    .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'characters'")
+    .get();
+  if (!table) return;
+  const columns = db.prepare("PRAGMA table_info(characters)").all() as { name: string }[];
+  if (columns.some((column) => column.name === "archetype")) {
+    console.warn("guildhall: rebuilding pre-release characters/signups tables for the Maelstrom schema");
+    db.exec("DROP TABLE IF EXISTS signups; DROP TABLE IF EXISTS characters;");
+  }
 }
 
 // Reuse one connection across hot reloads in dev and across route modules in prod.

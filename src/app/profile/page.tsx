@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import { listCharactersForUser } from "@/lib/characters";
 import { listBookingsForUser, listEventsForGm } from "@/lib/events";
-import { switchRoleAction } from "./actions";
+import { markFallenAction, switchRoleAction } from "./actions";
 
 export default async function ProfilePage({
   searchParams,
@@ -80,11 +80,26 @@ export default async function ProfilePage({
           <ul className="list">
             {characters.map((character) => (
               <li key={character.id}>
-                <strong>{character.name}</strong> — {character.archetype}
+                <strong>{character.name}</strong> — {character.core_class}
+                {character.attunement ? ` (${character.attunement})` : ""} · {character.faction}
+                {character.status === "fallen" ? (
+                  <span className="muted"> · ☠ fallen</span>
+                ) : (
+                  <form action={markFallenAction} className="inline-form">
+                    <input type="hidden" name="character_id" value={character.id} />{" "}
+                    <button type="submit" className="link-button danger">
+                      Mark as fallen (permanent)
+                    </button>
+                  </form>
+                )}
               </li>
             ))}
           </ul>
         )}
+        <p className="muted">
+          Per the rulebook, death is permanent — no clones, twins, descendants, or resurrections of
+          a fallen character.
+        </p>
       </section>
     </>
   );

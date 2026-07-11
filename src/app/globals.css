@@ -322,3 +322,28 @@ tbody tr:last-child td {
 section {
   margin-top: 2.5rem;
 }
+
+.card.fallen {
+  opacity: 0.65;
+  border-style: dashed;
+}
+
+.link-button.danger {
+  color: var(--danger);
+}
+
+.rules table {
+  margin: 0.75rem 0 1.25rem;
+}
+
+.rules td:first-child {
+  white-space: nowrap;
+}
+
+.rules section {
+  margin-top: 2rem;
+}
+
+fieldset label.radio {
+  align-items: baseline;
+}

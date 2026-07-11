@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { currentUser } from "@/lib/auth";
-import { listCharactersForUser } from "@/lib/characters";
+import { listLivingCharactersForUser } from "@/lib/characters";
 import { amenityList, getEvent, getSignupForUser, rosterForEvent } from "@/lib/events";
 import { bookSpotAction, cancelSpotAction } from "./actions";
 
@@ -22,7 +22,7 @@ export default async function EventPage({
   const amenities = amenityList(event);
   const full = event.signup_count >= event.capacity;
   const mySignup = user ? getSignupForUser(event.id, user.id) : null;
-  const myCharacters = user ? listCharactersForUser(user.id) : [];
+  const myCharacters = user ? listLivingCharactersForUser(user.id) : [];
   const isGm = user?.id === event.gm_id;
 
   return (
@@ -70,8 +70,8 @@ export default async function EventPage({
         {user && !isGm && !mySignup && !full && (
           myCharacters.length === 0 ? (
             <p>
-              You need a character first — <Link href="/characters/new">create one</Link>, then come
-              back to book your spot.
+              You need a living character first — <Link href="/characters/new">create one</Link>,
+              then come back to book your spot.
             </p>
           ) : (
             <form action={bookSpotAction} className="stack">
@@ -81,14 +81,18 @@ export default async function EventPage({
                 <select name="character_id" required>
                   {myCharacters.map((character) => (
                     <option key={character.id} value={character.id}>
-                      {character.name} — {character.archetype}
+                      {character.name} — {character.core_class}
                     </option>
                   ))}
                 </select>
               </label>
               <label>
                 Note for the game master (optional)
-                <input type="text" name="note" placeholder="Dietary needs, arrival time…" />
+                <input
+                  type="text"
+                  name="note"
+                  placeholder="Dietary needs, arrival time, non-combatant (red/white ribbon)…"
+                />
               </label>
               <button type="submit" className="button">
                 Book my spot
@@ -107,7 +111,8 @@ export default async function EventPage({
             <thead>
               <tr>
                 <th>Character</th>
-                <th>Archetype</th>
+                <th>Core Class</th>
+                <th>Faction</th>
                 <th>Player</th>
                 {isGm && <th>Note</th>}
               </tr>
@@ -116,7 +121,8 @@ export default async function EventPage({
               {roster.map((entry) => (
                 <tr key={entry.signup_id}>
                   <td>{entry.character_name}</td>
-                  <td>{entry.archetype}</td>
+                  <td>{entry.core_class}</td>
+                  <td>{entry.faction}</td>
                   <td>{entry.player_name}</td>
                   {isGm && <td>{entry.note}</td>}
                 </tr>

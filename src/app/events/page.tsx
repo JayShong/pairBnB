@@ -30,7 +30,7 @@ export default async function EventsPage({
           defaultValue={q ?? ""}
         />
         <select name="genre" defaultValue={genre ?? ""}>
-          <option value="">All genres</option>
+          <option value="">All event types</option>
           {GENRES.map((g) => (
             <option key={g} value={g}>
               {g}

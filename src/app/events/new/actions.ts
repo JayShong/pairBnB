@@ -31,7 +31,7 @@ export async function createEventAction(form: FormData): Promise<void> {
     .filter((a): a is string => typeof a === "string" && (AMENITIES as readonly string[]).includes(a));
 
   if (!title || !description || !venue || !region) back("Please fill in every field.");
-  if (!(GENRES as readonly string[]).includes(genre)) back("Pick a genre from the list.");
+  if (!(GENRES as readonly string[]).includes(genre)) back("Pick an event type from the list.");
   if (!startsOn || !endsOn || endsOn < startsOn) back("The end date can't be before the start date.");
   if (!Number.isInteger(capacity) || capacity < 1) back("Capacity must be at least 1 player.");
   if (!Number.isFinite(price) || price < 0) back("Price can't be negative.");

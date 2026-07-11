@@ -23,8 +23,8 @@ export default async function NewEventPage({
           <input type="text" name="title" required placeholder="The Blackwood Chronicles" />
         </label>
         <label>
-          Genre
-          <select name="genre" required defaultValue="Fantasy">
+          Event type
+          <select name="genre" required defaultValue="Main Campaign">
             {GENRES.map((g) => (
               <option key={g} value={g}>
                 {g}
@@ -38,7 +38,7 @@ export default async function NewEventPage({
             name="description"
             rows={5}
             required
-            placeholder="What awaits the players? Setting, tone, what to bring…"
+            placeholder="What awaits the players on this Shard? Tone, plot hooks, what to bring, check-in time at the Info Desk…"
           />
         </label>
         <label>

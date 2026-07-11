@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
-import { ARCHETYPES, createCharacter } from "@/lib/characters";
+import { createCharacter } from "@/lib/characters";
+import { CORE_CLASSES, FACTIONS, attunementsForClass } from "@/lib/maelstrom";
 
 export async function createCharacterAction(form: FormData): Promise<void> {
   const user = await currentUser();
@@ -15,7 +16,10 @@ export async function createCharacterAction(form: FormData): Promise<void> {
   };
 
   const name = text("name");
-  const archetype = text("archetype");
+  const coreClass = text("core_class");
+  const attunement = text("attunement");
+  const race = text("race") || "Human";
+  const faction = text("faction");
   const backstory = text("backstory");
   const returnTo = text("return_to");
 
@@ -23,9 +27,31 @@ export async function createCharacterAction(form: FormData): Promise<void> {
     redirect(`/characters/new?error=${encodeURIComponent(message)}`);
 
   if (!name) back("Your character needs a name.");
-  if (!(ARCHETYPES as readonly string[]).includes(archetype)) back("Pick an archetype from the list.");
+  if (!(CORE_CLASSES as readonly string[]).includes(coreClass)) {
+    back("Pick a Core Class from the rulebook.");
+  }
+  if (!(FACTIONS as readonly string[]).includes(faction)) back("Pick a faction.");
 
-  createCharacter({ userId: user.id, name, archetype, backstory });
+  // Casters must choose an attunement of the matching alignment; everyone
+  // else has none (Rules 7.3 / 7.4).
+  const allowed = attunementsForClass(coreClass);
+  if (allowed.length > 0 && !allowed.includes(attunement)) {
+    back(
+      coreClass === "Arcane Caster"
+        ? "An Arcane Caster must attune to one of the six elements."
+        : "A Divine Caster must attune to one of the Divine Spheres."
+    );
+  }
+
+  createCharacter({
+    userId: user.id,
+    name,
+    coreClass,
+    attunement: allowed.length > 0 ? attunement : "",
+    race,
+    faction,
+    backstory,
+  });
 
   revalidatePath("/characters");
   redirect(returnTo.startsWith("/") ? returnTo : "/characters");

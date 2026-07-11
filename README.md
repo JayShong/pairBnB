@@ -1,23 +1,34 @@
 # ⚔ Guildhall
 
-**The gathering place for your LARP community.**
+**The gathering place for the Maelstrom LARP community.**
 
-Game masters post their upcoming live action role-play events — weekend-long
-fantasy campaigns, one-night murder mysteries, wasteland survival runs.
-Players pick an event, book a spot in character, and show up ready to play.
+Guildhall is the community hub for [Maelstrom LARP](https://drive.google.com/file/d/1fbMmv-Vlq7oAdTAY4lks5p9B35ra8PPH/view)
+(a high-fantasy live action role-playing experience by MyLARP, General Rules
+2.5th Edition). Game masters post the next adventures on the Shards of
+shattered Armis; players create rulebook-legal characters and book a spot in
+character.
 
 ## Features
 
 - **Events** — game masters post events with venue, region, dates, capacity,
-  price per player, and what the event provides (props, costume rental,
-  weapons armory, on-site camping, meals, safety marshal). Everyone can
-  browse and search by text or genre.
-- **Characters** — every member keeps a roster of characters (name,
-  archetype, backstory) in a public character directory.
-- **Bookings** — players book a spot at an event *as* one of their
+  price per player, an event type (main campaign, one-shot, skirmish night,
+  tavern social, training & weapon check), and what the event provides
+  (props, costume rental, loaner weapons, weapon & costume inspection, spell
+  packets, camping, meals, first aiders). Everyone can browse and search.
+- **Characters** — built to the Maelstrom rulebook: a Core Class (Fighter,
+  Rogue, Arcane Caster, Divine Caster, Trader), an attunement for casters
+  (the six Arcane elements or eight Divine Spheres), a humanoid race, and a
+  faction (Tuscan Empire, Cottontail League, He Guo, or your own). Death is
+  permanent — fallen characters move to the **Hall of the Fallen** and can
+  never be played again.
+- **Bookings** — players book a spot at an event *as* one of their living
   characters, with an optional note for the game master. Capacity is
-  enforced atomically; the event page shows the live roster, and only the
-  GM sees players' private notes.
+  enforced atomically; the event page shows the live roster (character,
+  class, faction, player), and only the GM sees players' private notes.
+- **Rules & Lore** — `/rules` is a condensed in-app reference of the
+  Maelstrom General Rules (safety, combat, calls, spellcasting, items,
+  character creation); `/lore` covers Armis, the Maelstrom, the Shards, and
+  the established factions. Both link to the full rulebook.
 - **Roles** — join as a player or a game master, and switch any time from
   your profile.
 - **Accounts** — email/password auth with scrypt hashing and signed,
