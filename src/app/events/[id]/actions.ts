@@ -20,7 +20,7 @@ export async function bookSpotAction(form: FormData): Promise<void> {
   }
 
   try {
-    createSignup({ eventId, userId: user.id, characterId, note });
+    await createSignup({ eventId, userId: user.id, characterId, note });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not book your spot.";
     redirect(`/events/${eventId}?error=${encodeURIComponent(message)}`);
@@ -36,7 +36,7 @@ export async function cancelSpotAction(form: FormData): Promise<void> {
 
   const eventId = Number(form.get("event_id"));
   if (Number.isInteger(eventId)) {
-    cancelSignup(eventId, user.id);
+    await cancelSignup(eventId, user.id);
     revalidatePath(`/events/${eventId}`);
     redirect(`/events/${eventId}`);
   }

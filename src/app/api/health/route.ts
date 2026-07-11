@@ -2,9 +2,9 @@ import { getDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export function GET() {
+export async function GET() {
   try {
-    getDb().prepare("SELECT 1").get();
+    await getDb().prepare("SELECT 1").first();
     return Response.json({ status: "ok" });
   } catch {
     return Response.json({ status: "degraded" }, { status: 503 });

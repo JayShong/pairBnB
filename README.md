@@ -47,78 +47,88 @@ character.
 
 ```bash
 npm install
-npm run seed     # optional: demo members, characters, and events
-npm run dev      # http://localhost:3000
+npm run db:migrate:local   # create the local D1 schema
+npm run db:seed:local      # optional: demo members, characters, and events
+npm run dev                # http://localhost:3000
 ```
 
-The seed prints demo credentials (`morgan@guildhall.example` /
-`guildhall-demo` is a game master). The SQLite database lives in
-`data/guildhall.sqlite` (git-ignored).
+`next dev` gets a local D1 database (via the OpenNext Cloudflare dev
+initializer + miniflare), so the same code runs in dev and production.
+Demo accounts all use the password `guildhall-demo`
+(`morgan@guildhall.example` is a game master).
 
-## Production build
+To test in the real Workers runtime locally:
 
 ```bash
-npm run build
-SESSION_SECRET=<long random string> npm start
+npm run preview            # builds the Worker and serves it with wrangler
 ```
 
-## Hosting at larp.jasonshong.com
+## Hosting at larp.jasonshong.com (Cloudflare Workers + D1)
 
-The production site lives at **https://larp.jasonshong.com**. The app ships
-as a self-contained Docker image (Next.js standalone output); the GitHub
-Actions workflow in `.github/workflows/docker.yml` builds and publishes it
-to `ghcr.io/jayshong/pairbnb:latest` on every push to `master`.
+The production site lives at **https://larp.jasonshong.com**, hosted on
+Cloudflare Workers with a D1 (serverless SQLite) database — the same
+Cloudflare account that holds the `jasonshong.com` zone, so deploying
+creates the DNS record and TLS certificate for the subdomain
+automatically.
 
-### One-time setup on any VPS
+### One-time setup
 
-1. **DNS** — create an `A` (and `AAAA` if you have IPv6) record for
-   `larp.jasonshong.com` pointing at the server's IP.
-2. Copy the `deploy/` directory to the server and create `deploy/.env`:
-   ```bash
-   echo "SESSION_SECRET=$(openssl rand -hex 32)" > deploy/.env
-   ```
-3. Start it:
-   ```bash
-   cd deploy && docker compose up -d
-   ```
+```bash
+npx wrangler login                          # authenticate with your Cloudflare account
+npx wrangler d1 create guildhall            # create the database
+#   → copy the printed database_id into wrangler.jsonc
+npm run db:migrate:remote                   # create the schema
+npm run db:seed:remote                      # optional demo data
+npx wrangler secret put SESSION_SECRET      # paste a long random string
+```
 
-That's the whole deployment: Caddy terminates TLS (it obtains and renews
-the Let's Encrypt certificate for `larp.jasonshong.com` automatically,
-with HSTS and security headers), proxies to the app, and the SQLite
-database persists in the `guildhall-data` volume. Pull updates with
-`docker compose pull && docker compose up -d`.
+### Deploy
 
-### Using a PaaS instead
+```bash
+npm run deploy
+```
 
-The image runs as-is on Fly.io, Render, Railway, or Cloud Run: deploy
-`ghcr.io/jayshong/pairbnb:latest`, mount a persistent volume at `/data`,
-set the env vars below, then add `larp.jasonshong.com` as a custom domain
-in the platform's dashboard and create the CNAME record it gives you.
+That's it — the `routes` entry in `wrangler.jsonc` registers
+`larp.jasonshong.com` as a Workers custom domain, which provisions the
+DNS record and certificate in your zone automatically. No dashboard
+clicking required.
+
+### Continuous deployment (optional)
+
+`.github/workflows/deploy.yml` applies D1 migrations and deploys on every
+push to `master`. Add two repository secrets: `CLOUDFLARE_API_TOKEN`
+(Workers Scripts:Edit + D1:Edit + Zone DNS:Edit for jasonshong.com) and
+`CLOUDFLARE_ACCOUNT_ID`.
 
 ### Configuration
 
-| Env var | Purpose |
+| Setting | Purpose |
 | --- | --- |
-| `SESSION_SECRET` | **Required in production.** Signs session cookies — use a long random value and keep it stable across deploys. |
-| `NEXT_PUBLIC_SITE_URL` | Canonical site origin. Defaults to `https://larp.jasonshong.com`; override for staging. |
-| `DATABASE_PATH` | Where the SQLite file lives (the Docker image defaults to `/data/guildhall.sqlite`). Mount a persistent volume there. |
+| `SESSION_SECRET` (Workers secret) | **Required in production.** Signs session cookies — keep it stable across deploys. Locally, set it in `.dev.vars`. |
+| `NEXT_PUBLIC_SITE_URL` (var in wrangler.jsonc) | Canonical site origin. Defaults to `https://larp.jasonshong.com`. |
+| `DB` (D1 binding) | The `guildhall` database; schema lives in `migrations/`. |
 
-`GET /api/health` is the health/readiness probe (checks the database).
+`GET /api/health` is the health probe (checks the database).
 `/robots.txt` and `/sitemap.xml` are generated against the site URL.
 
-To seed a fresh deployment with demo data, run `node scripts/seed.mjs`
-inside the container once.
+Passwords are hashed with PBKDF2-SHA256 (100k iterations) via Web Crypto
+and sessions are HMAC-signed cookies, so no native modules or external
+auth service are needed on Workers. Note: password hashing is the most
+CPU-intensive request; the Workers paid plan ($5/mo) comfortably covers
+it and is recommended for production.
 
 ## Project layout
 
 ```
-src/lib/          database, auth, and data-access modules
+src/lib/          D1 data access, auth, rulebook data (maelstrom.ts)
 src/app/          App Router pages and server actions
   events/         browse, search, post, event detail + booking
-  characters/     directory + character creation
-  profile/        role switching, my bookings, my events, my characters
-  api/health/     cloud health probe
-scripts/seed.mjs  demo data
+  characters/     directory + rulebook character creation
+  rules/, lore/   Maelstrom quick reference and setting
+  profile/        role switching, bookings, characters, hosted events
+  api/health/     health probe
+migrations/       D1 schema migrations
+seed.sql          optional demo data
 ```
 
 ---

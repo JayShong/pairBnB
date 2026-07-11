@@ -10,7 +10,7 @@ export async function switchRoleAction(): Promise<void> {
   const user = await currentUser();
   if (!user) redirect("/login");
 
-  setUserRole(user.id, user.role === "gm" ? "player" : "gm");
+  await setUserRole(user.id, user.role === "gm" ? "player" : "gm");
   revalidatePath("/profile");
   redirect("/profile");
 }
@@ -22,7 +22,7 @@ export async function markFallenAction(form: FormData): Promise<void> {
 
   const characterId = Number(form.get("character_id"));
   if (Number.isInteger(characterId)) {
-    markCharacterFallen(characterId, user.id);
+    await markCharacterFallen(characterId, user.id);
     revalidatePath("/characters");
     revalidatePath("/profile");
   }

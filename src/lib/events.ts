@@ -52,7 +52,9 @@ const SUMMARY_SELECT = `
   FROM events e JOIN users u ON u.id = e.gm_id
 `;
 
-export function listEvents(filter: { q?: string; genre?: string } = {}): EventSummary[] {
+export async function listEvents(
+  filter: { q?: string; genre?: string } = {}
+): Promise<EventSummary[]> {
   const clauses: string[] = [];
   const args: unknown[] = [];
   if (filter.q) {
@@ -65,31 +67,34 @@ export function listEvents(filter: { q?: string; genre?: string } = {}): EventSu
     args.push(filter.genre);
   }
   const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
-  return getDb()
+  const { results } = await getDb()
     .prepare(`${SUMMARY_SELECT} ${where} ORDER BY e.starts_on ASC`)
-    .all(...args) as EventSummary[];
+    .bind(...args)
+    .all<EventSummary>();
+  return results;
 }
 
-export function upcomingEvents(limit: number): EventSummary[] {
-  return getDb()
+export async function upcomingEvents(limit: number): Promise<EventSummary[]> {
+  const { results } = await getDb()
     .prepare(`${SUMMARY_SELECT} WHERE e.ends_on >= date('now') ORDER BY e.starts_on ASC LIMIT ?`)
-    .all(limit) as EventSummary[];
+    .bind(limit)
+    .all<EventSummary>();
+  return results;
 }
 
-export function getEvent(id: number): EventSummary | null {
-  return (
-    (getDb().prepare(`${SUMMARY_SELECT} WHERE e.id = ?`).get(id) as EventSummary | undefined) ??
-    null
-  );
+export async function getEvent(id: number): Promise<EventSummary | null> {
+  return getDb().prepare(`${SUMMARY_SELECT} WHERE e.id = ?`).bind(id).first<EventSummary>();
 }
 
-export function listEventsForGm(gmId: number): EventSummary[] {
-  return getDb()
+export async function listEventsForGm(gmId: number): Promise<EventSummary[]> {
+  const { results } = await getDb()
     .prepare(`${SUMMARY_SELECT} WHERE e.gm_id = ? ORDER BY e.starts_on ASC`)
-    .all(gmId) as EventSummary[];
+    .bind(gmId)
+    .all<EventSummary>();
+  return results;
 }
 
-export function createEvent(input: {
+export async function createEvent(input: {
   gmId: number;
   title: string;
   genre: string;
@@ -101,13 +106,13 @@ export function createEvent(input: {
   capacity: number;
   price: number;
   amenities: string[];
-}): EventSummary {
-  const result = getDb()
+}): Promise<EventSummary> {
+  const result = await getDb()
     .prepare(
       `INSERT INTO events (gm_id, title, genre, description, venue, region, starts_on, ends_on, capacity, price, amenities)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
-    .run(
+    .bind(
       input.gmId,
       input.title,
       input.genre,
@@ -119,12 +124,13 @@ export function createEvent(input: {
       input.capacity,
       input.price,
       JSON.stringify(input.amenities)
-    );
-  return getEvent(Number(result.lastInsertRowid))!;
+    )
+    .run();
+  return (await getEvent(Number(result.meta.last_row_id)))!;
 }
 
-export function rosterForEvent(eventId: number): RosterEntry[] {
-  return getDb()
+export async function rosterForEvent(eventId: number): Promise<RosterEntry[]> {
+  const { results } = await getDb()
     .prepare(
       `SELECT s.id AS signup_id, s.user_id, u.name AS player_name,
               c.name AS character_name, c.core_class, c.faction, s.note
@@ -134,15 +140,19 @@ export function rosterForEvent(eventId: number): RosterEntry[] {
        WHERE s.event_id = ?
        ORDER BY s.created_at ASC`
     )
-    .all(eventId) as RosterEntry[];
+    .bind(eventId)
+    .all<RosterEntry>();
+  return results;
 }
 
-export function getSignupForUser(eventId: number, userId: number): { id: number } | null {
-  return (
-    (getDb()
-      .prepare("SELECT id FROM signups WHERE event_id = ? AND user_id = ?")
-      .get(eventId, userId) as { id: number } | undefined) ?? null
-  );
+export async function getSignupForUser(
+  eventId: number,
+  userId: number
+): Promise<{ id: number } | null> {
+  return getDb()
+    .prepare("SELECT id FROM signups WHERE event_id = ? AND user_id = ?")
+    .bind(eventId, userId)
+    .first<{ id: number }>();
 }
 
 export interface BookingRow {
@@ -155,8 +165,8 @@ export interface BookingRow {
   character_name: string;
 }
 
-export function listBookingsForUser(userId: number): BookingRow[] {
-  return getDb()
+export async function listBookingsForUser(userId: number): Promise<BookingRow[]> {
+  const { results } = await getDb()
     .prepare(
       `SELECT s.id AS signup_id, e.id AS event_id, e.title, e.venue, e.starts_on, e.ends_on,
               c.name AS character_name
@@ -166,57 +176,75 @@ export function listBookingsForUser(userId: number): BookingRow[] {
        WHERE s.user_id = ?
        ORDER BY e.starts_on ASC`
     )
-    .all(userId) as BookingRow[];
+    .bind(userId)
+    .all<BookingRow>();
+  return results;
 }
 
 /**
- * Books a spot on an event. Runs in a transaction so the capacity check and
- * the insert are atomic. Throws Error with a human-readable message on
- * business-rule violations.
+ * Books a spot on an event. D1 has no interactive transactions, so the
+ * capacity check happens inside a single conditional INSERT — the insert
+ * only succeeds while spots remain, which keeps overbooking impossible
+ * even under concurrent requests. The friendlier business-rule checks
+ * run first and throw human-readable errors.
  */
-export function createSignup(input: {
+export async function createSignup(input: {
   eventId: number;
   userId: number;
   characterId: number;
   note: string;
-}): void {
+}): Promise<void> {
   const db = getDb();
-  db.transaction(() => {
-    const event = db.prepare("SELECT id, gm_id, capacity FROM events WHERE id = ?").get(input.eventId) as
-      | { id: number; gm_id: number; capacity: number }
-      | undefined;
-    if (!event) throw new Error("This event no longer exists.");
-    if (event.gm_id === input.userId) throw new Error("You are running this event — no need to book a spot.");
 
-    const character = db
-      .prepare("SELECT user_id, status FROM characters WHERE id = ?")
-      .get(input.characterId) as { user_id: number; status: string } | undefined;
-    if (!character || character.user_id !== input.userId) {
-      throw new Error("Pick one of your own characters.");
-    }
-    if (character.status !== "active") {
-      throw new Error("That character has fallen — death is permanent in the Maelstrom. Create a new character.");
-    }
+  const event = await db
+    .prepare("SELECT id, gm_id, capacity FROM events WHERE id = ?")
+    .bind(input.eventId)
+    .first<{ id: number; gm_id: number; capacity: number }>();
+  if (!event) throw new Error("This event no longer exists.");
+  if (event.gm_id === input.userId) {
+    throw new Error("You are running this event — no need to book a spot.");
+  }
 
-    const taken = db
-      .prepare("SELECT COUNT(*) AS n FROM signups WHERE event_id = ?")
-      .get(input.eventId) as { n: number };
-    if (taken.n >= event.capacity) throw new Error("This event is fully booked.");
-
-    const existing = db
-      .prepare("SELECT id FROM signups WHERE event_id = ? AND user_id = ?")
-      .get(input.eventId, input.userId);
-    if (existing) throw new Error("You already have a spot at this event.");
-
-    db.prepare("INSERT INTO signups (event_id, user_id, character_id, note) VALUES (?, ?, ?, ?)").run(
-      input.eventId,
-      input.userId,
-      input.characterId,
-      input.note
+  const character = await db
+    .prepare("SELECT user_id, status FROM characters WHERE id = ?")
+    .bind(input.characterId)
+    .first<{ user_id: number; status: string }>();
+  if (!character || character.user_id !== input.userId) {
+    throw new Error("Pick one of your own characters.");
+  }
+  if (character.status !== "active") {
+    throw new Error(
+      "That character has fallen — death is permanent in the Maelstrom. Create a new character."
     );
-  })();
+  }
+
+  const existing = await getSignupForUser(input.eventId, input.userId);
+  if (existing) throw new Error("You already have a spot at this event.");
+
+  let result;
+  try {
+    result = await db
+      .prepare(
+        `INSERT INTO signups (event_id, user_id, character_id, note)
+         SELECT ?1, ?2, ?3, ?4
+         WHERE (SELECT COUNT(*) FROM signups WHERE event_id = ?1)
+             < (SELECT capacity FROM events WHERE id = ?1)`
+      )
+      .bind(input.eventId, input.userId, input.characterId, input.note)
+      .run();
+  } catch (error) {
+    // The UNIQUE(event_id, user_id) constraint catches a double-submit race.
+    if (String(error).includes("UNIQUE")) {
+      throw new Error("You already have a spot at this event.");
+    }
+    throw error;
+  }
+  if (result.meta.changes === 0) throw new Error("This event is fully booked.");
 }
 
-export function cancelSignup(eventId: number, userId: number): void {
-  getDb().prepare("DELETE FROM signups WHERE event_id = ? AND user_id = ?").run(eventId, userId);
+export async function cancelSignup(eventId: number, userId: number): Promise<void> {
+  await getDb()
+    .prepare("DELETE FROM signups WHERE event_id = ? AND user_id = ?")
+    .bind(eventId, userId)
+    .run();
 }

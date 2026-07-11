@@ -14,15 +14,15 @@ export default async function EventPage({
 }) {
   const { id } = await params;
   const { error } = await searchParams;
-  const event = getEvent(Number(id));
+  const event = await getEvent(Number(id));
   if (!event) notFound();
 
   const user = await currentUser();
-  const roster = rosterForEvent(event.id);
+  const roster = await rosterForEvent(event.id);
   const amenities = amenityList(event);
   const full = event.signup_count >= event.capacity;
-  const mySignup = user ? getSignupForUser(event.id, user.id) : null;
-  const myCharacters = user ? listLivingCharactersForUser(user.id) : [];
+  const mySignup = user ? await getSignupForUser(event.id, user.id) : null;
+  const myCharacters = user ? await listLivingCharactersForUser(user.id) : [];
   const isGm = user?.id === event.gm_id;
 
   return (

@@ -4,7 +4,7 @@ import { listCharacters } from "@/lib/characters";
 
 export default async function CharactersPage() {
   const user = await currentUser();
-  const characters = listCharacters();
+  const characters = await listCharacters();
   const living = characters.filter((character) => character.status === "active");
   const fallen = characters.filter((character) => character.status === "fallen");
 

@@ -43,7 +43,7 @@ export async function createCharacterAction(form: FormData): Promise<void> {
     );
   }
 
-  createCharacter({
+  await createCharacter({
     userId: user.id,
     name,
     coreClass,

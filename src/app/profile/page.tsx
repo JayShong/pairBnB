@@ -14,9 +14,9 @@ export default async function ProfilePage({
   const user = await currentUser();
   if (!user) redirect("/login");
 
-  const bookings = listBookingsForUser(user.id);
-  const characters = listCharactersForUser(user.id);
-  const myEvents = user.role === "gm" ? listEventsForGm(user.id) : [];
+  const bookings = await listBookingsForUser(user.id);
+  const characters = await listCharactersForUser(user.id);
+  const myEvents = user.role === "gm" ? await listEventsForGm(user.id) : [];
 
   return (
     <>

@@ -13,8 +13,8 @@ export async function loginAction(form: FormData): Promise<void> {
   const email = text(form, "email");
   const password = typeof form.get("password") === "string" ? (form.get("password") as string) : "";
 
-  const user = email ? getUserByEmail(email) : null;
-  if (!user || !verifyPassword(password, user.password_hash)) {
+  const user = email ? await getUserByEmail(email) : null;
+  if (!user || !(await verifyPassword(password, user.password_hash))) {
     redirect(`/login?error=${encodeURIComponent("Wrong email or password.")}`);
   }
 
@@ -33,9 +33,9 @@ export async function registerAction(form: FormData): Promise<void> {
 
   if (!name || !email || !email.includes("@")) back("Please fill in your name and a valid email.");
   if (password.length < 8) back("Password must be at least 8 characters.");
-  if (getUserByEmail(email)) back("There is already a member with that email.");
+  if (await getUserByEmail(email)) back("There is already a member with that email.");
 
-  const user = createUser({ email, name, passwordHash: hashPassword(password), role });
+  const user = await createUser({ email, name, passwordHash: await hashPassword(password), role });
   await startSession(user.id);
   redirect("/events");
 }

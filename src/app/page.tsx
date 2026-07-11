@@ -4,7 +4,7 @@ import { upcomingEvents, amenityList } from "@/lib/events";
 
 export default async function HomePage() {
   const user = await currentUser();
-  const events = upcomingEvents(4);
+  const events = await upcomingEvents(4);
 
   return (
     <>

@@ -1,0 +1,37 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "guildhall",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-05-05",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  // Deploying creates the DNS record and certificate for this hostname
+  // automatically, because the jasonshong.com zone is on the same
+  // Cloudflare account.
+  "routes": [
+    {
+      "pattern": "larp.jasonshong.com",
+      "custom_domain": true
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "guildhall",
+      // Replace with the id printed by: npx wrangler d1 create guildhall
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://larp.jasonshong.com"
+  },
+  "observability": {
+    "enabled": true
+  }
+  // Secrets (set with `npx wrangler secret put SESSION_SECRET`):
+  //   SESSION_SECRET — signs session cookies
+}

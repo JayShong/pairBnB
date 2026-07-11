@@ -1,58 +1,107 @@
 import "server-only";
-import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
+import { getEnv } from "@/lib/db";
 import { getUserById, type User } from "@/lib/users";
+
+// Auth built entirely on Web Crypto so it runs on Cloudflare Workers:
+// PBKDF2-SHA256 for passwords, HMAC-SHA256 for session cookie signatures.
 
 const SESSION_COOKIE = "guildhall_session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 14; // two weeks
+const PBKDF2_ITERATIONS = 100_000;
 
 function secret(): string {
-  const value = process.env.SESSION_SECRET;
+  const env = getEnv();
+  const value = env.SESSION_SECRET ?? process.env.SESSION_SECRET;
   if (value) return value;
-  if (process.env.NODE_ENV === "production" && process.env.ALLOW_INSECURE_SESSION_SECRET !== "1") {
-    throw new Error("SESSION_SECRET must be set in production");
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("SESSION_SECRET must be set (npx wrangler secret put SESSION_SECRET)");
   }
   return "guildhall-dev-secret-do-not-use-in-production";
 }
 
-export function hashPassword(password: string): string {
-  const salt = randomBytes(16).toString("hex");
-  const hash = scryptSync(password, salt, 64).toString("hex");
-  return `${salt}:${hash}`;
+const encoder = new TextEncoder();
+
+function toHex(bytes: ArrayBuffer | Uint8Array): string {
+  return Array.from(new Uint8Array(bytes as ArrayBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
-export function verifyPassword(password: string, stored: string): boolean {
-  const [salt, hash] = stored.split(":");
-  if (!salt || !hash) return false;
-  const candidate = scryptSync(password, salt, 64);
-  const expected = Buffer.from(hash, "hex");
-  return candidate.length === expected.length && timingSafeEqual(candidate, expected);
+function fromHex(hex: string): Uint8Array | null {
+  if (hex.length % 2 !== 0 || /[^0-9a-f]/i.test(hex)) return null;
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+  }
+  return bytes;
 }
 
-function sign(payload: string): string {
-  return createHmac("sha256", secret()).update(payload).digest("hex");
+function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+  return diff === 0;
 }
 
-function makeToken(userId: number): string {
+async function pbkdf2(password: string, salt: Uint8Array, iterations: number): Promise<Uint8Array> {
+  const key = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, [
+    "deriveBits",
+  ]);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt: salt as BufferSource, iterations },
+    key,
+    256
+  );
+  return new Uint8Array(bits);
+}
+
+// Stored as "iterations:salthex:hashhex".
+export async function hashPassword(password: string): Promise<string> {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const hash = await pbkdf2(password, salt, PBKDF2_ITERATIONS);
+  return `${PBKDF2_ITERATIONS}:${toHex(salt)}:${toHex(hash)}`;
+}
+
+export async function verifyPassword(password: string, stored: string): Promise<boolean> {
+  const [iterationsRaw, saltHex, hashHex] = stored.split(":");
+  const iterations = Number(iterationsRaw);
+  const salt = saltHex ? fromHex(saltHex) : null;
+  const expected = hashHex ? fromHex(hashHex) : null;
+  if (!Number.isInteger(iterations) || iterations < 1 || !salt || !expected) return false;
+  const candidate = await pbkdf2(password, salt, iterations);
+  return constantTimeEqual(candidate, expected);
+}
+
+async function hmac(payload: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret()),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
+  return toHex(signature);
+}
+
+async function makeToken(userId: number): Promise<string> {
   const payload = `${userId}.${Date.now() + SESSION_TTL_MS}`;
-  return `${payload}.${sign(payload)}`;
+  return `${payload}.${await hmac(payload)}`;
 }
 
-function userIdFromToken(token: string): number | null {
+async function userIdFromToken(token: string): Promise<number | null> {
   const [id, expires, signature] = token.split(".");
   if (!id || !expires || !signature) return null;
-  const payload = `${id}.${expires}`;
-  const expected = sign(payload);
-  const given = Buffer.from(signature);
-  const wanted = Buffer.from(expected);
-  if (given.length !== wanted.length || !timingSafeEqual(given, wanted)) return null;
+  const expected = await hmac(`${id}.${expires}`);
+  if (!constantTimeEqual(encoder.encode(signature), encoder.encode(expected))) return null;
   if (Number(expires) < Date.now()) return null;
   return Number(id);
 }
 
 export async function startSession(userId: number): Promise<void> {
   const store = await cookies();
-  store.set(SESSION_COOKIE, makeToken(userId), {
+  store.set(SESSION_COOKIE, await makeToken(userId), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -70,7 +119,7 @@ export async function currentUser(): Promise<User | null> {
   const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
   if (!token) return null;
-  const userId = userIdFromToken(token);
+  const userId = await userIdFromToken(token);
   if (userId === null) return null;
   return getUserById(userId);
 }

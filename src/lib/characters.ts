@@ -17,40 +17,42 @@ export interface CharacterWithPlayer extends Character {
   player_name: string;
 }
 
-export function listCharacters(): CharacterWithPlayer[] {
-  return getDb()
+export async function listCharacters(): Promise<CharacterWithPlayer[]> {
+  const { results } = await getDb()
     .prepare(
       `SELECT c.*, u.name AS player_name
        FROM characters c JOIN users u ON u.id = c.user_id
        ORDER BY c.status ASC, c.created_at DESC`
     )
-    .all() as CharacterWithPlayer[];
+    .all<CharacterWithPlayer>();
+  return results;
 }
 
-export function listCharactersForUser(userId: number): Character[] {
-  return getDb()
+export async function listCharactersForUser(userId: number): Promise<Character[]> {
+  const { results } = await getDb()
     .prepare("SELECT * FROM characters WHERE user_id = ? ORDER BY created_at DESC")
-    .all(userId) as Character[];
+    .bind(userId)
+    .all<Character>();
+  return results;
 }
 
 // Death is permanent in the Maelstrom — only living characters can be
 // played at events.
-export function listLivingCharactersForUser(userId: number): Character[] {
-  return getDb()
+export async function listLivingCharactersForUser(userId: number): Promise<Character[]> {
+  const { results } = await getDb()
     .prepare(
       "SELECT * FROM characters WHERE user_id = ? AND status = 'active' ORDER BY created_at DESC"
     )
-    .all(userId) as Character[];
+    .bind(userId)
+    .all<Character>();
+  return results;
 }
 
-export function getCharacter(id: number): Character | null {
-  return (
-    (getDb().prepare("SELECT * FROM characters WHERE id = ?").get(id) as Character | undefined) ??
-    null
-  );
+export async function getCharacter(id: number): Promise<Character | null> {
+  return getDb().prepare("SELECT * FROM characters WHERE id = ?").bind(id).first<Character>();
 }
 
-export function createCharacter(input: {
+export async function createCharacter(input: {
   userId: number;
   name: string;
   coreClass: string;
@@ -58,13 +60,13 @@ export function createCharacter(input: {
   race: string;
   faction: string;
   backstory: string;
-}): Character {
-  const result = getDb()
+}): Promise<Character> {
+  const result = await getDb()
     .prepare(
       `INSERT INTO characters (user_id, name, core_class, attunement, race, faction, backstory)
        VALUES (?, ?, ?, ?, ?, ?, ?)`
     )
-    .run(
+    .bind(
       input.userId,
       input.name,
       input.coreClass,
@@ -72,14 +74,16 @@ export function createCharacter(input: {
       input.race,
       input.faction,
       input.backstory
-    );
-  return getCharacter(Number(result.lastInsertRowid))!;
+    )
+    .run();
+  return (await getCharacter(Number(result.meta.last_row_id)))!;
 }
 
 // Permanent death, per the rulebook: the story ends here. This cannot be
 // undone, and the character keeps their place in the Hall of the Fallen.
-export function markCharacterFallen(id: number, userId: number): void {
-  getDb()
+export async function markCharacterFallen(id: number, userId: number): Promise<void> {
+  await getDb()
     .prepare("UPDATE characters SET status = 'fallen' WHERE id = ? AND user_id = ?")
-    .run(id, userId);
+    .bind(id, userId)
+    .run();
 }

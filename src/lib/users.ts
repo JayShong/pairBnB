@@ -11,28 +11,27 @@ export interface User {
   created_at: string;
 }
 
-export function getUserById(id: number): User | null {
-  return (getDb().prepare("SELECT * FROM users WHERE id = ?").get(id) as User | undefined) ?? null;
+export async function getUserById(id: number): Promise<User | null> {
+  return getDb().prepare("SELECT * FROM users WHERE id = ?").bind(id).first<User>();
 }
 
-export function getUserByEmail(email: string): User | null {
-  return (
-    (getDb().prepare("SELECT * FROM users WHERE email = ?").get(email) as User | undefined) ?? null
-  );
+export async function getUserByEmail(email: string): Promise<User | null> {
+  return getDb().prepare("SELECT * FROM users WHERE email = ?").bind(email).first<User>();
 }
 
-export function createUser(input: {
+export async function createUser(input: {
   email: string;
   name: string;
   passwordHash: string;
   role: Role;
-}): User {
-  const result = getDb()
+}): Promise<User> {
+  const result = await getDb()
     .prepare("INSERT INTO users (email, name, password_hash, role) VALUES (?, ?, ?, ?)")
-    .run(input.email, input.name, input.passwordHash, input.role);
-  return getUserById(Number(result.lastInsertRowid))!;
+    .bind(input.email, input.name, input.passwordHash, input.role)
+    .run();
+  return (await getUserById(Number(result.meta.last_row_id)))!;
 }
 
-export function setUserRole(id: number, role: Role): void {
-  getDb().prepare("UPDATE users SET role = ? WHERE id = ?").run(role, id);
+export async function setUserRole(id: number, role: Role): Promise<void> {
+  await getDb().prepare("UPDATE users SET role = ? WHERE id = ?").bind(role, id).run();
 }

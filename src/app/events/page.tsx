@@ -9,7 +9,7 @@ export default async function EventsPage({
 }) {
   const { q, genre } = await searchParams;
   const user = await currentUser();
-  const events = listEvents({ q, genre });
+  const events = await listEvents({ q, genre });
 
   return (
     <>

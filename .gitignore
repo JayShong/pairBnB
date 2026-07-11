@@ -8,6 +8,11 @@ out/
 # production
 build/
 
+# cloudflare
+.open-next/
+.wrangler/
+.dev.vars
+
 # local data & env
 data/
 *.sqlite

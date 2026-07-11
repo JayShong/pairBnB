@@ -36,7 +36,7 @@ export async function createEventAction(form: FormData): Promise<void> {
   if (!Number.isInteger(capacity) || capacity < 1) back("Capacity must be at least 1 player.");
   if (!Number.isFinite(price) || price < 0) back("Price can't be negative.");
 
-  const event = createEvent({
+  const event = await createEvent({
     gmId: user.id,
     title,
     genre,
